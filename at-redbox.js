@@ -18,7 +18,7 @@ if (compactList.length > 0) {
 			$("td.title_type", this).css("color", "blue");
 			
 			// FOR DEVELOPMENT, only process one specific title
-			if ($("td.title > a", this).text() == "The Dark Knight Rises") {
+			if ($("td.title > a", this).text() == "Meet Bill") {
 				$("td.title > a", this).css("color", "red");
 				
 				var accessor = { 
@@ -42,6 +42,20 @@ if (compactList.length > 0) {
 			    
 			    $.get(urlToCall, function(data) {
 			    	console.log("Response is", data);
+			    	
+			    	var title = $(data).find("catalog_title").first();
+			    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
+			    	var href = link.attr("href");
+			    	console.log(title, link.length, link, href);
+			    	
+			    	message.action = href;
+			    	message.parameters = [];
+			    	OAuth.completeRequest(message, accessor);
+			    	
+			    	$.get(message.action+"?"+OAuth.formEncode(message.parameters), function(formatData) {
+			    		console.log(formatData);
+			    	});
+			    	
 			    }, "xml");
 			}
 			
