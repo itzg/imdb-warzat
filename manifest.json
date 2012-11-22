@@ -8,9 +8,10 @@
       "matches": ["http://www.imdb.com/*/watchlist*"],
       "run_at": "document_end",
       "css": ["available-at.css"],
-      "js": ["jquery-1.8.3.min.js","oauth.js","at-redbox.js"]
+      "js": ["jquery-1.8.3.min.js","sha1.js","oauth.js","at-redbox.js"]
     }
   ],
   "permissions": [
+      "http://api-public.netflix.com/"
   ]
 }
