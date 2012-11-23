@@ -1,5 +1,3 @@
-// Just for sanity
-$("div#pagecontent").css("background-color", "green");
 
 var AvailableAt = {};
 
@@ -31,8 +29,6 @@ AvailableAt.Invoker.prototype = {
 var compactList = $("div.list.compact");
 
 var rows;
-var maxActiveQueries = 1;
-var activeQueries = maxActiveQueries;
 // Netflix allows 10 calls per sec and it takes 2 per row
 var perRowTimeout = 200;
 
@@ -46,9 +42,7 @@ if (compactList.length > 0) {
 	$("th.title", compactList).after("<th class='availableAt'>At</th>");
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
-	var invoker = new AvailableAt.Invoker({ 
-		consumerKey: "en66ns8syqhw7ukgsx3e94rx",
-		consumerSecret: "gR4JE8NmXh" });
+	var invoker = new AvailableAt.Invoker(netflixAccessor);
 	
 	var nowSec = Date.now() / 1000;
 
@@ -58,22 +52,21 @@ if (compactList.length > 0) {
 }
 
 function processNextRow() {
-	console.log("Checking for more", rows.length);
+//	console.info("Checking for more", rows.length);
 	if (rows.length > 0) {
 		processListItem(rows.shift());
 		return true;
 	}
 	else {
-		console.log("Done");
+//		console.log("Done");
 		return false;
 	}
 }
 
 function processListItem(row) {
-	console.log("Prcessing row");
+//	console.log("Prcessing row");
 	// Only process feature films
 	if ($("td.title_type", row).html() == "Feature") {
-		$("td.title_type", row).css("color", "blue");
 		
 		var parameters = [];
 	    parameters.push(["term", $("td.title > a", row).text()]);
@@ -81,17 +74,17 @@ function processListItem(row) {
 	    parameters.push(["max_results", "1"]);
 	    
 	    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, row, "xml", function(data){
-	    	console.log("titles:", data);
+//	    	console.info("titles:", data);
 	    	var title = $(data).find("catalog_title").first();
 	    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
 	    	var href = link.attr("href");
-	    	console.log(title, link.length, link, href);
+//	    	console.info(title, link.length, link, href);
 	    	
 	    	var rowInfo = { row: this,
 	    		title: title };
 	    	
 	    	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
-	    		console.log(formatData);
+//	    		console.info(formatData);
 	    		
 	    		var instantWatchInfo = $(formatData).find("availability:has(category[term='instant'])");
 	    		

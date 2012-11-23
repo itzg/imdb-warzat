@@ -1,0 +1,4 @@
+var defaultAccessor = { 
+		consumerKey: "",
+		consumerSecret: "" 
+};
