@@ -1,4 +1,32 @@
+// Just for sanity
 $("div#pagecontent").css("background-color", "green");
+
+var AvailableAt = {};
+
+AvailableAt.Invoker = function(accessor) {
+	$.extend(this, accessor);
+}
+
+AvailableAt.Invoker.prototype = {
+	invoke: function(url, parameters, context, dataType, handler) {
+	    var message = { 
+	    		method: "GET",
+				action: url
+              };
+	    message.parameters = parameters;
+
+		OAuth.completeRequest(message, this);
+		
+		var urlToCall = message.action + "?" + 
+		OAuth.formEncode(message.parameters);
+		
+		$.ajax(urlToCall, {
+			success: handler,
+			context: context,
+			dataType: dataType
+		});
+	}
+}
 
 var compactList = $("div.list.compact");
 
@@ -10,9 +38,16 @@ if (compactList.length > 0) {
 	$("td.created").remove();
 	
 	$("th.title", compactList).after("<th class='availableAt'>At</th>");
-	$("td.title", compactList).after("<td class='availableAt'>?</td>");
+	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
+	var invoker = new AvailableAt.Invoker({ 
+		consumerKey: "en66ns8syqhw7ukgsx3e94rx",
+		consumerSecret: "gR4JE8NmXh" });
+	
+	var nowSec = Date.now() / 1000;
+
 	$("tr.list_item").each(function(index) {
+		var row = this;
 		// Only process feature films
 		if ($("td.title_type", this).html() == "Feature") {
 			$("td.title_type", this).css("color", "blue");
@@ -21,42 +56,37 @@ if (compactList.length > 0) {
 			if ($("td.title > a", this).text() == "Meet Bill") {
 				$("td.title > a", this).css("color", "red");
 				
-				var accessor = { 
-						consumerKey: "en66ns8syqhw7ukgsx3e94rx",
-						consumerSecret: "gR4JE8NmXh" };
-			    var message = { method: "GET",
-			    				action: "http://api-public.netflix.com/catalog/titles",
-			                    parameters: []
-			                  };
+				var parameters = [];
+			    parameters.push(["term", $("td.title > a", this).text()]);
+			    parameters.push(["start_index", "0"]);
+			    parameters.push(["max_results", "1"]);
 			    
-			    message.parameters.push(["term", $("td.title > a", this).text()]);
-			    message.parameters.push(["start_index", "0"]);
-			    message.parameters.push(["max_results", "1"]);
-			    
-			    OAuth.completeRequest(message, accessor);
-			    
-			    var urlToCall = message.action + "?" + 
-			    OAuth.formEncode(message.parameters);
-			    
-			    console.log(urlToCall);
-			    
-			    $.get(urlToCall, function(data) {
-			    	console.log("Response is", data);
-			    	
+			    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, row, "xml", function(data){
+			    	console.log("titles:", data);
 			    	var title = $(data).find("catalog_title").first();
 			    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
 			    	var href = link.attr("href");
 			    	console.log(title, link.length, link, href);
 			    	
-			    	message.action = href;
-			    	message.parameters = [];
-			    	OAuth.completeRequest(message, accessor);
+			    	var rowInfo = { row: this,
+			    		title: title };
 			    	
-			    	$.get(message.action+"?"+OAuth.formEncode(message.parameters), function(formatData) {
+			    	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
 			    		console.log(formatData);
+			    		
+			    		var instantWatchInfo = $(formatData).find("availability:has(category[term='instant'])");
+			    		
+			    		if (instantWatchInfo.length > 0
+			    				&& nowSec > instantWatchInfo.attr("available_from") 
+			    				&& nowSec < instantWatchInfo.attr("available_until")) {
+			    			var webPageHref = $(title).find("link[rel='alternate']").attr("href");
+			    			var imgUrl = chrome.extension.getURL("images/Netflix.png");
+			    			$(this.row).find("td.availableAt")
+			    			.append("<td><a target='_blank' href='" + webPageHref + "'><img src='" +
+			    					imgUrl + "'></img></a></td>");
+			    		}
 			    	});
-			    	
-			    }, "xml");
+			    });
 			}
 			
 		}

@@ -13,5 +13,9 @@
   ],
   "permissions": [
       "http://api-public.netflix.com/"
+  ],
+  
+  "web_accessible_resources": [
+    "images/Netflix.png"
   ]
 }
