@@ -2,7 +2,8 @@
   "name": "IMDB Watchlist Warzat",
   "version": "1.0",
   "manifest_version": 2,
-  "description": "Decorates your IMDB watchlist with an indicator and a link when a movie is available at Netflix or Redbox",
+  "description": "Decorates your IMDB watchlist with an indicator and a link when a movie is available for Netflix streaming.",
+  
   "content_scripts": [
     {
       "matches": ["http://www.imdb.com/*/watchlist*"],
@@ -11,6 +12,7 @@
       "js": ["jquery-1.8.3.min.js","sha1.js","oauth.js","netflix-accessor.js","warzat.js"]
     }
   ],
+  
   "permissions": [
       "http://api-public.netflix.com/"
   ],

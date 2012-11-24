@@ -30,7 +30,8 @@ var compactList = $("div.list.compact");
 
 var rows;
 // Netflix allows 10 calls per sec and it takes 2 per row
-var perRowTimeout = 200;
+var perRowTimeout = 250; // ms
+var maxRows = 150;
 
 if (compactList.length > 0) {
 	// Make room for our column
@@ -47,6 +48,9 @@ if (compactList.length > 0) {
 	var nowSec = Date.now() / 1000;
 
 	rows = $.makeArray($("tr.list_item"));
+	if (rows.length > maxRows) {
+		rows.splice(maxRows);
+	}
 	
 	setTimeout(processNextRow, 1);
 }
@@ -64,24 +68,49 @@ function processNextRow() {
 }
 
 function processListItem(row) {
-//	console.log("Prcessing row");
-	// Only process feature films
-	if ($("td.title_type", row).html() == "Feature") {
+
+	var type = $("td.title_type", row).text();
+	
+	if (type == "Feature" || type == "Documentary" || type == "TV Series") {
+		
+		var title = $("td.title > a", row).text();
+		
+		var rowDetails = {
+			row: row,
+			title: title,
+			releaseYear: $("td.year", row).text()
+		}
 		
 		var parameters = [];
-	    parameters.push(["term", $("td.title > a", row).text()]);
+	    parameters.push(["term", title]);
 	    parameters.push(["start_index", "0"]);
-	    parameters.push(["max_results", "1"]);
+	    parameters.push(["max_results", "3"]);
 	    
-	    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, row, "xml", function(data){
-//	    	console.info("titles:", data);
-	    	var title = $(data).find("catalog_title").first();
+	    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", function(data){
+	    	var rowDetails = this;
+	    	
+	    	console.info(rowDetails.title, data);
+	    	var title = null;
+	    	$(data).find("catalog_title").each(function(candidate) {
+	    		var candidateYear = $("release_year", this).text();
+	    		if (candidateYear == rowDetails.releaseYear) {
+	    			title = $(this);
+	    		}
+	    	});
+	    	
+	    	if (title == null) {
+	    		console.log("No matching years for "+rowDetails.title);
+	    		return;
+	    	}
+	    	
 	    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
 	    	var href = link.attr("href");
 //	    	console.info(title, link.length, link, href);
 	    	
-	    	var rowInfo = { row: this,
-	    		title: title };
+	    	var rowInfo = { 
+	    			row: rowDetails.row,
+	    			title: title 
+			};
 	    	
 	    	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
 //	    		console.info(formatData);
@@ -94,7 +123,7 @@ function processListItem(row) {
 	    			var webPageHref = $(title).find("link[rel='alternate']").attr("href");
 	    			var imgUrl = chrome.extension.getURL("images/Netflix.png");
 	    			$(this.row).find("td.availableAt")
-	    			.append("<div><a target='_blank' href='" + webPageHref + "'><img src='" +
+	    			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
 	    					imgUrl + "'></img></a></div>");
 	    		}
 	    	});
