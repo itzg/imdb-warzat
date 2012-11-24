@@ -89,7 +89,7 @@ function processListItem(row) {
 	    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", function(data){
 	    	var rowDetails = this;
 	    	
-	    	console.info(rowDetails.title, data);
+//	    	console.info(rowDetails.title, data);
 	    	var title = null;
 	    	$(data).find("catalog_title").each(function(candidate) {
 	    		var candidateTitle = $("title", this).attr("short");
