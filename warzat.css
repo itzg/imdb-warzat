@@ -9,4 +9,8 @@
 	position: absolute;
 	background-color: white;
 	padding: 5px;
+	box-shadow: 4px 4px 6px #888;
+	border-radius: 3px;
+	font-family: Verdana, Arial, sans-serif;
+	font-size: 14px;
 }

@@ -64,8 +64,8 @@ function processNextRow() {
 //	console.info("Checking for more", rows.length);
 	if (!stopWarzat && rows.length > 0) {
 		if (progressTooltip === undefined) {
-			progressTooltip = $("<div id='warzatProgressPopup' class='ui-widget'>" +
-					"<span id='warzatProgressCount'>.</span> left to process. <a href='#' id='btnStopWarzat'>Stop</a>" +
+			progressTooltip = $("<div id='warzatProgressPopup'>" +
+					"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
 					"</div>").appendTo("body");
 			progressTooltip.position({
 				my: "left bottom",
