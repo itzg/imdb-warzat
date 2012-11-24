@@ -40,7 +40,7 @@ if (compactList.length > 0) {
 	$("th.created").remove();
 	$("td.created").remove();
 	
-	$("th.title", compactList).after("<th class='availableAt'>At</th>");
+	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
 	var invoker = new AvailableAt.Invoker(netflixAccessor);
@@ -92,9 +92,11 @@ function processListItem(row) {
 	    	console.info(rowDetails.title, data);
 	    	var title = null;
 	    	$(data).find("catalog_title").each(function(candidate) {
+	    		var candidateTitle = $("title", this).attr("short");
 	    		var candidateYear = $("release_year", this).text();
-	    		if (candidateYear == rowDetails.releaseYear) {
+	    		if (candidateTitle == rowDetails.title && candidateYear == rowDetails.releaseYear) {
 	    			title = $(this);
+	    			return false;
 	    		}
 	    	});
 	    	
@@ -107,28 +109,35 @@ function processListItem(row) {
 	    	var href = link.attr("href");
 //	    	console.info(title, link.length, link, href);
 	    	
-	    	var rowInfo = { 
-	    			row: rowDetails.row,
-	    			title: title 
-			};
-	    	
-	    	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
-//	    		console.info(formatData);
-	    		
-	    		var instantWatchInfo = $(formatData).find("availability:has(category[term='instant'])");
-	    		
-	    		if (instantWatchInfo.length > 0
-	    				&& nowSec > instantWatchInfo.attr("available_from") 
-	    				&& nowSec < instantWatchInfo.attr("available_until")) {
-	    			var webPageHref = $(title).find("link[rel='alternate']").attr("href");
-	    			var imgUrl = chrome.extension.getURL("images/Netflix.png");
-	    			$(this.row).find("td.availableAt")
-	    			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
-	    					imgUrl + "'></img></a></div>");
-	    		}
-	    	});
+	    	lookupNetflixFormatAvailability(href, { 
+    			row: rowDetails.row,
+    			title: title 
+	    	})
 	    });
 	}
 	
 	setTimeout(processNextRow, perRowTimeout);
+}
+
+function lookupNetflixFormatAvailability(href, rowInfo) {
+	if (href === undefined) {
+		return;
+	}
+	
+	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
+//		console.info(formatData);
+		
+		var instantWatchInfo = $(formatData).find("availability:has(category[term='instant'])");
+		
+		if (instantWatchInfo.length > 0
+				&& nowSec > instantWatchInfo.attr("available_from") 
+				&& nowSec < instantWatchInfo.attr("available_until")) {
+			var webPageHref = $(this.title).find("link[rel='alternate']").attr("href");
+			var imgUrl = chrome.extension.getURL("images/Netflix.png");
+			$(this.row).find("td.availableAt")
+			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
+					imgUrl + "'></img></a></div>");
+		}
+	});
+
 }
