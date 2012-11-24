@@ -28,10 +28,14 @@ AvailableAt.Invoker.prototype = {
 
 var compactList = $("div.list.compact");
 
+var progressTooltip;
+var ourHeaderCell;
+
 var rows;
 // Netflix allows 10 calls per sec and it takes 2 per row
 var perRowTimeout = 250; // ms
 var maxRows = 150;
+var stopWarzat = false;
 
 if (compactList.length > 0) {
 	// Make room for our column
@@ -41,6 +45,7 @@ if (compactList.length > 0) {
 	$("td.created").remove();
 	
 	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
+	ourHeaderCell = $("th.availableAt", compactList);
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
 	var invoker = new AvailableAt.Invoker(netflixAccessor);
@@ -57,12 +62,32 @@ if (compactList.length > 0) {
 
 function processNextRow() {
 //	console.info("Checking for more", rows.length);
-	if (rows.length > 0) {
+	if (!stopWarzat && rows.length > 0) {
+		if (progressTooltip === undefined) {
+			progressTooltip = $("<div id='warzatProgressPopup' class='ui-widget'>" +
+					"<span id='warzatProgressCount'>.</span> left to process. <a href='#' id='btnStopWarzat'>Stop</a>" +
+					"</div>").appendTo("body");
+			progressTooltip.position({
+				my: "left bottom",
+				at: "left top-15",
+				of: ourHeaderCell,
+				collision: "none"
+			});
+			progressTooltip.show();
+			
+			$("#btnStopWarzat").click(function(evt){
+				evt.preventDefault();
+				stopWarzat = true;
+			});
+			
+		}
+		$("#warzatProgressCount").text(rows.length);
+		
 		processListItem(rows.shift());
 		return true;
 	}
 	else {
-//		console.log("Done");
+		progressTooltip.hide();
 		return false;
 	}
 }
@@ -101,7 +126,7 @@ function processListItem(row) {
 	    	});
 	    	
 	    	if (title == null) {
-	    		console.log("No matching years for "+rowDetails.title);
+//	    		console.log("No matching years for "+rowDetails.title);
 	    		return;
 	    	}
 	    	

@@ -3,3 +3,10 @@
 .availableAt {
 	width: 80px;
 }
+
+#warzatProgressPopup {
+	border: thin solid;
+	position: absolute;
+	background-color: white;
+	padding: 5px;
+}
