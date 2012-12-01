@@ -88,12 +88,13 @@ ProcessTooltip.update = function() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function Searcher(context, rows, accessor, minRowPeriod) {
+function Searcher(context, rows, accessor, minRowPeriod, badgeImage) {
 	this.context = context;
 	this.rows = rows;
 	this.accessor = accessor;
 	this.minRowPeriod = minRowPeriod;
 	this.needsToStop = false;
+	this.badgeImage = badgeImage;
 }
 
 Searcher.prototype = {
@@ -134,6 +135,14 @@ Searcher.prototype = {
 		}, this.minRowPeriod);
 	},
 	
+	addBadge: function(rowDetails, webPageHref) {
+		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
+		$(rowDetails.row).find("td.availableAt")
+		.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
+				imgUrl + "'></img></a></div>");
+
+	},
+	
 	stop: function() {
 		// raise the stop flag to squash the next readyForNext
 		this.needsToStop = true;
@@ -169,13 +178,11 @@ function Netflix(rows) {
 				&& nowSec > availableFrom
 				&& nowSec < availableUntil) {
 			var webPageHref = $(rowDetails.titleXml).find("link[rel='alternate']").attr("href");
-			var imgUrl = chrome.extension.getURL("images/Netflix.png");
-			$(rowDetails.row).find("td.availableAt")
-			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
-					imgUrl + "'></img></a></div>");
+			
+			rowDetails.me.searcher.addBadge(rowDetails, webPageHref);
 		}
 		
-		rowDetails.this.searcher.readyForNext(nextRow);
+		rowDetails.me.searcher.readyForNext(nextRow);
 	}
 	
 	function titlesCallback(dataXml) {
@@ -194,7 +201,7 @@ function Netflix(rows) {
     	
     	if (title == null) {
 //    		console.log("No matching years for "+rowDetails.title);
-    		rowDetails.this.searcher.readyForNext(nextRow);
+    		rowDetails.me.searcher.readyForNext(nextRow);
     		return;
     	}
     	
@@ -205,15 +212,15 @@ function Netflix(rows) {
     	rowDetails.titleXml = title;
     	
 		if (href === undefined) {
-    		rowDetails.this.searcher.readyForNext(nextRow);
+    		rowDetails.me.searcher.readyForNext(nextRow);
 			return;
 		}
 		
-		rowDetails.this.invoker.invoke(href, [], rowDetails, "xml", formatCallback);
+		rowDetails.me.invoker.invoke(href, [], rowDetails, "xml", formatCallback);
 	}
 	
 	function nextRow(rowDetails) {
-		rowDetails.this = this;
+		rowDetails.me = this;
 		
 		var parameters = [];
 	    parameters.push(["term", rowDetails.title]);
@@ -225,8 +232,8 @@ function Netflix(rows) {
 	}
 	
 	this.searcher = new Searcher(this, rows, netflixAccessor, 
-			250 // Netflix allows 10 calls per sec and it takes 2 per row
-			);
+			250, // Netflix allows 10 calls per sec and it takes 2 per row
+			"Netflix.png");
 	ProcessTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
 	this.invoker = new AvailableAt.Invoker(netflixAccessor);
@@ -234,8 +241,53 @@ function Netflix(rows) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function Redbox() {
+function Redbox(rows) {
+	function queryCallback(data) {
+		var rowDetails = this;
+		
+		var moviesResult = data.Products.Movie;
+		
+		if (moviesResult != undefined && moviesResult.length > 0) {
+			var flags = moviesResult[0].Flags.Flag;
+			flags.forEach(function(flag) {
+				if (flag["@type"] == "AvailableAtRedbox") {
+					var now = Date.now();
+					var beginDate = flag["@beginDate"];
+					var endDate = flag["@endDate"];
+					if (beginDate != undefined && Date.parse(beginDate) < now) {
+						if (endDate == undefined || Date.parse(endDate) > now) {
+							rowDetails.me.searcher.addBadge(rowDetails, moviesResult[0]["@websiteUrl"]);
+						}
+					}
+				}
+			});
+		}
+		
+		rowDetails.me.searcher.readyForNext(nextRow);
+	}
 	
+	function nextRow(rowDetails) {
+		rowDetails.me = this;
+		
+		$.ajax("https://api.redbox.com/v3/products", {
+			data: {
+				apiKey: this.searcher.accessor.apiKey,
+				q: rowDetails.title,
+				productTypes: "Movies"
+			},
+			context: rowDetails,
+			success: queryCallback,
+			headers: {"Accept":"application/json"},
+			dataType: "json"
+		});
+	}
+	
+	this.searcher = new Searcher(this, rows, redboxAccessor, 
+			250,
+			"Redbox.png"
+			);
+	ProcessTooltip.addSearcher(this.searcher);
+	this.searcher.readyForNext(nextRow);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,4 +313,5 @@ if (compactList.length > 0) {
 	}
 	
 	new Netflix(rows);
+	new Redbox(rows);
 }
