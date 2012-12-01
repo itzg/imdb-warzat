@@ -73,7 +73,7 @@ function processNextRow() {
 				of: ourHeaderCell,
 				collision: "none"
 			});
-			progressTooltip.show();
+			progressTooltip.show("fade");
 			
 			$("#btnStopWarzat").click(function(evt){
 				evt.preventDefault();
@@ -87,7 +87,7 @@ function processNextRow() {
 		return true;
 	}
 	else {
-		progressTooltip.hide();
+		progressTooltip.hide("puff");
 		return false;
 	}
 }
