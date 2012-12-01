@@ -31,25 +31,25 @@ AvailableAt.Invoker.prototype = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var ProcessTooltip = {
+var ProgressTooltip = {
 	searchers: [],
 	jqObj: null,
 	ourHeaderCell: null
 };
 	
-ProcessTooltip.addSearcher = function(searcher) {
-	ProcessTooltip.searchers.push(searcher);
+ProgressTooltip.addSearcher = function(searcher) {
+	ProgressTooltip.searchers.push(searcher);
 };
 
-ProcessTooltip.stopAll = function() {
-	for (var i = 0; i < ProcessTooltip.searchers.length; ++i) {
-		ProcessTooltip.searchers[i].stop();
+ProgressTooltip.stopAll = function() {
+	for (var i = 0; i < ProgressTooltip.searchers.length; ++i) {
+		ProgressTooltip.searchers[i].stop();
 	}
 };
 	
-ProcessTooltip.update = function() {
+ProgressTooltip.update = function() {
 	var maxRemaining = 0;
-	var searchers = ProcessTooltip.searchers;
+	var searchers = ProgressTooltip.searchers;
 	
 	for (var i = 0; i < searchers.length; ++i) {
 		if (!searchers[i].isStopped()) {
@@ -61,28 +61,28 @@ ProcessTooltip.update = function() {
 	}
 	
 	if (maxRemaining > 0) {
-		if (ProcessTooltip.jqObj == null) {
-			ProcessTooltip.jqObj = $("<div id='warzatProgressPopup'>" +
+		if (ProgressTooltip.jqObj == null) {
+			ProgressTooltip.jqObj = $("<div id='warzatProgressPopup'>" +
 				"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
 				"</div>").appendTo("body");
-			ProcessTooltip.jqObj.position({
+			ProgressTooltip.jqObj.position({
 				my: "left bottom",
 				at: "left top-15",
-				of: ProcessTooltip.ourHeaderCell,
+				of: ProgressTooltip.ourHeaderCell,
 				collision: "none"
 			});
-			ProcessTooltip.jqObj.show("fade");
+			ProgressTooltip.jqObj.show("fade");
 		
 			$("#btnStopWarzat").click(function(evt){
 				evt.preventDefault();
-				ProcessTooltip.stopAll();
+				ProgressTooltip.stopAll();
 			});
 		}
 		$("#warzatProgressCount").text(maxRemaining);
 	}
-	else if (ProcessTooltip.jqObj != null) {
-		ProcessTooltip.jqObj.hide("puff");
-		ProcessTooltip.jqObj = null;
+	else if (ProgressTooltip.jqObj != null) {
+		ProgressTooltip.jqObj.hide("puff");
+		ProgressTooltip.jqObj = null;
 	}
 };
 
@@ -90,16 +90,18 @@ ProcessTooltip.update = function() {
 
 function Searcher(context, rows, accessor, minRowPeriod, badgeImage) {
 	this.context = context;
-	this.rows = rows;
+	// Need a copy of the given array so each searcher works of its own list
+	this.rows = rows.slice(0);
 	this.accessor = accessor;
 	this.minRowPeriod = minRowPeriod;
 	this.needsToStop = false;
 	this.badgeImage = badgeImage;
+	this.lastInvocation = Date.now();
 }
 
 Searcher.prototype = {
 	readyForNext: function(handler) {
-		ProcessTooltip.update();
+		ProgressTooltip.update();
 
 		// see if stop flagged is raised
 		if (this.needsToStop) {
@@ -108,9 +110,17 @@ Searcher.prototype = {
 		}
 		
 		var oThis = this;
+		
+		// Compute the actual timeout needed taking into account the
+		// time it took for the previous AJAX operations to execute.
+		var nextInvocation = this.lastInvocation + this.minRowPeriod;
+		var now = Date.now();
+		var timeToWait = nextInvocation - now;
+		this.lastInvocation = now;
+		
 		setTimeout(function() {
 			if (oThis.needsToStop) {
-				ProcessTooltip.update();
+				ProgressTooltip.update();
 				return;
 			}
 			
@@ -120,6 +130,10 @@ Searcher.prototype = {
 			while (type != "Feature" && type != "Documentary" && type != "TV Series") {
 				row = oThis.rows.shift();
 				
+				if (row == undefined) {
+					ProgressTooltip.update();
+					return;
+				}
 				type = $("td.title_type", row).text();
 			}
 			
@@ -132,11 +146,14 @@ Searcher.prototype = {
 			}
 
 			handler.call(oThis.context, rowDetails);
-		}, this.minRowPeriod);
+		}
+		// Last call may have been slow, so we'll cap the minimum timeout at 10ms
+		, Math.max(10, timeToWait));
 	},
 	
 	addBadge: function(rowDetails, webPageHref) {
 		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
+		console.log("Adding badge", this.badgeImage, webPageHref);
 		$(rowDetails.row).find("td.availableAt")
 		.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
 				imgUrl + "'></img></a></div>");
@@ -219,22 +236,31 @@ function Netflix(rows) {
 		rowDetails.me.invoker.invoke(href, [], rowDetails, "xml", formatCallback);
 	}
 	
+	function errorCallback(jqXHR, textStatus, errorThrown) {
+		console.error("Netflix query failed", this, textStatus, errorThrown);
+		this.me.searcher.readyForNext(nextRow);
+	}
+	
 	function nextRow(rowDetails) {
 		rowDetails.me = this;
 		
+		//DEBUG
+		if (rowDetails.title == "Hugo") {
+			console.log("Netflix, looking", rowDetails);
+		}
 		var parameters = [];
 	    parameters.push(["term", rowDetails.title]);
 	    parameters.push(["start_index", "0"]);
-	    parameters.push(["max_results", "3"]);
+	    parameters.push(["max_results", "10"]);
 	    
 	    this.invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", 
-	    		titlesCallback);
+	    		titlesCallback, errorCallback);
 	}
 	
 	this.searcher = new Searcher(this, rows, netflixAccessor, 
 			250, // Netflix allows 10 calls per sec and it takes 2 per row
 			"Netflix.png");
-	ProcessTooltip.addSearcher(this.searcher);
+	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
 	this.invoker = new AvailableAt.Invoker(netflixAccessor);
 }
@@ -266,6 +292,11 @@ function Redbox(rows) {
 		rowDetails.me.searcher.readyForNext(nextRow);
 	}
 	
+	function errorCallback(jqXHR, textStatus, errorThrown) {
+		console.error("Redbox query failed", this, textStatus, errorThrown);
+		this.me.searcher.readyForNext(nextRow);
+	}
+	
 	function nextRow(rowDetails) {
 		rowDetails.me = this;
 		
@@ -277,6 +308,7 @@ function Redbox(rows) {
 			},
 			context: rowDetails,
 			success: queryCallback,
+			error: errorCallback,
 			headers: {"Accept":"application/json"},
 			dataType: "json"
 		});
@@ -286,7 +318,7 @@ function Redbox(rows) {
 			250,
 			"Redbox.png"
 			);
-	ProcessTooltip.addSearcher(this.searcher);
+	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
 }
 
@@ -304,7 +336,7 @@ if (compactList.length > 0) {
 	$("td.created").remove();
 	
 	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
-	ProcessTooltip.ourHeaderCell = $("th.availableAt", compactList);
+	ProgressTooltip.ourHeaderCell = $("th.availableAt", compactList);
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
 	var rows = $.makeArray($("tr.list_item"));
