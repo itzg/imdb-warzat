@@ -273,19 +273,49 @@ function Redbox(rows) {
 		var moviesResult = data.Products.Movie;
 		
 		if (moviesResult != undefined && moviesResult.length > 0) {
-			var flags = moviesResult[0].Flags.Flag;
-			flags.forEach(function(flag) {
-				if (flag["@type"] == "AvailableAtRedbox") {
-					var now = Date.now();
-					var beginDate = flag["@beginDate"];
-					var endDate = flag["@endDate"];
-					if (beginDate != undefined && Date.parse(beginDate) < now) {
-						if (endDate == undefined || Date.parse(endDate) > now) {
-							rowDetails.me.searcher.addBadge(rowDetails, moviesResult[0]["@websiteUrl"]);
-						}
+			var dvdPos = -1;
+			var blurayPos = -1;
+			
+			// Scans formats provided
+			for (var i = 0; i < moviesResult.length; ++i) {
+				
+				// Need to look for exact match of title and release year. We'll get
+				// substring matches back from Redbox and could get prior releases
+				// with same title.
+				if (moviesResult[i]["Title"] == rowDetails.title 
+						&& moviesResult[i]["ReleaseYear"] == rowDetails.releaseYear) {
+					var format = moviesResult[i]["@format"];
+					if (format == "DVD") {
+						dvdPos = i;
+					}
+					else if (format == "Blu-ray") {
+						blurayPos = i;
 					}
 				}
-			});
+			}
+			
+			// ...we'll prefer DVD
+			var moviesResultPos = dvdPos != -1 ? dvdPos : blurayPos;
+			if (moviesResultPos != -1) {
+				var flags = moviesResult[moviesResultPos].Flags.Flag;
+
+				flags.forEach(function(flag) {
+					if (flag["@type"] == "AvailableAtRedbox") {
+						var now = Date.now();
+						var beginDate = flag["@beginDate"];
+						var endDate = flag["@endDate"];
+						if (beginDate != undefined && Date.parse(beginDate) < now) {
+							if (endDate == undefined || Date.parse(endDate) > now) {
+								rowDetails.me.searcher.addBadge(rowDetails, 
+										moviesResult[moviesResultPos]["@websiteUrl"]);
+							}
+						}
+					}
+				});
+			}
+			else {
+				console.log("Didn't find expected format", moviesResult, rowDetails);
+			}
 		}
 		
 		rowDetails.me.searcher.readyForNext(nextRow);
