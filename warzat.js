@@ -153,7 +153,7 @@ Searcher.prototype = {
 	
 	addBadge: function(rowDetails, webPageHref) {
 		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
-		console.log("Adding badge", this.badgeImage, webPageHref);
+//		console.log("Adding badge", this.badgeImage, webPageHref);
 		$(rowDetails.row).find("td.availableAt")
 		.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
 				imgUrl + "'></img></a></div>");
@@ -244,13 +244,12 @@ function Netflix(rows) {
 	function nextRow(rowDetails) {
 		rowDetails.me = this;
 		
-		//DEBUG
-		if (rowDetails.title == "Hugo") {
-			console.log("Netflix, looking", rowDetails);
-		}
 		var parameters = [];
 	    parameters.push(["term", rowDetails.title]);
 	    parameters.push(["start_index", "0"]);
+	    // Since Netflix doesn't provide an exact match query, we'll get a few
+	    // back and then find the exact title and release year match. At least
+	    // it gives these back in best match order.
 	    parameters.push(["max_results", "10"]);
 	    
 	    this.invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", 
@@ -314,7 +313,9 @@ function Redbox(rows) {
 		});
 	}
 	
-	this.searcher = new Searcher(this, rows, redboxAccessor, 
+	// Redbox is crazy slow, so we'll trim the search list aggressively
+	var rowsToSearch = rows.slice(0, Math.min(maxRowsRedbox, rows.length));
+	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
 			250,
 			"Redbox.png"
 			);
@@ -326,7 +327,8 @@ function Redbox(rows) {
 // MAIN
 
 var compactList = $("div.list.compact");
-var maxRows = 150;
+var maxRows = 100;
+var maxRowsRedbox = 30;
 
 if (compactList.length > 0) {
 	// Make room for our column
