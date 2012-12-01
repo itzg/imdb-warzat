@@ -1,4 +1,7 @@
 
+
+////////////////////////////////////////////////////////////////////////////////
+
 var AvailableAt = {};
 
 AvailableAt.Invoker = function(accessor) {
@@ -26,16 +29,220 @@ AvailableAt.Invoker.prototype = {
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+var ProcessTooltip = {
+	searchers: [],
+	jqObj: null,
+	ourHeaderCell: null
+};
+	
+ProcessTooltip.addSearcher = function(searcher) {
+	ProcessTooltip.searchers.push(searcher);
+};
+
+ProcessTooltip.stopAll = function() {
+	for (var i = 0; i < ProcessTooltip.searchers.length; ++i) {
+		ProcessTooltip.searchers[i].stop();
+	}
+};
+	
+ProcessTooltip.update = function() {
+	var maxRemaining = 0;
+	var searchers = ProcessTooltip.searchers;
+	
+	for (var i = 0; i < searchers.length; ++i) {
+		if (!searchers[i].isStopped()) {
+			var remaining = searchers[i].getRemainingCount();
+			if (remaining > maxRemaining) {
+				maxRemaining = remaining;
+			}
+		}
+	}
+	
+	if (maxRemaining > 0) {
+		if (ProcessTooltip.jqObj == null) {
+			ProcessTooltip.jqObj = $("<div id='warzatProgressPopup'>" +
+				"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
+				"</div>").appendTo("body");
+			ProcessTooltip.jqObj.position({
+				my: "left bottom",
+				at: "left top-15",
+				of: ProcessTooltip.ourHeaderCell,
+				collision: "none"
+			});
+			ProcessTooltip.jqObj.show("fade");
+		
+			$("#btnStopWarzat").click(function(evt){
+				evt.preventDefault();
+				ProcessTooltip.stopAll();
+			});
+		}
+		$("#warzatProgressCount").text(maxRemaining);
+	}
+	else if (ProcessTooltip.jqObj != null) {
+		ProcessTooltip.jqObj.hide("puff");
+		ProcessTooltip.jqObj = null;
+	}
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+function Searcher(context, rows, accessor, minRowPeriod) {
+	this.context = context;
+	this.rows = rows;
+	this.accessor = accessor;
+	this.minRowPeriod = minRowPeriod;
+	this.needsToStop = false;
+}
+
+Searcher.prototype = {
+	readyForNext: function(handler) {
+		ProcessTooltip.update();
+
+		// see if stop flagged is raised
+		if (this.needsToStop) {
+			// just return to the effectively terminate the loop
+			return;
+		}
+		
+		var oThis = this;
+		setTimeout(function() {
+			if (oThis.needsToStop) {
+				ProcessTooltip.update();
+				return;
+			}
+			
+			var type="";
+			var row;
+			
+			while (type != "Feature" && type != "Documentary" && type != "TV Series") {
+				row = oThis.rows.shift();
+				
+				type = $("td.title_type", row).text();
+			}
+			
+			var title = $("td.title > a", row).text();
+			
+			var rowDetails = {
+				row: row,
+				title: title,
+				releaseYear: $("td.year", row).text()
+			}
+
+			handler.call(oThis.context, rowDetails);
+		}, this.minRowPeriod);
+	},
+	
+	stop: function() {
+		// raise the stop flag to squash the next readyForNext
+		this.needsToStop = true;
+	},
+	
+	isStopped: function() {
+		return this.needsToStop || this.rows.length == 0;
+	},
+	
+	getRemainingCount: function() {
+		return this.rows.length;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function Netflix(rows) {
+	function formatCallback(formatDataXml) {
+		var rowDetails = this;
+//		console.info(formatData);
+		
+		var instantWatchInfo = $(formatDataXml).find("availability:has(category[term='instant'])");
+		
+		var nowSec = Date.now() / 1000;
+
+		var instantWatchCount = instantWatchInfo.length;
+		var availableFrom = instantWatchInfo.attr("available_from");
+		var availableUntil = instantWatchInfo.attr("available_until");
+		
+//		console.log(rowDetails, instantWatchCount, nowSec, availableFrom, availableUntil);
+		
+		if (instantWatchCount > 0
+				&& nowSec > availableFrom
+				&& nowSec < availableUntil) {
+			var webPageHref = $(rowDetails.titleXml).find("link[rel='alternate']").attr("href");
+			var imgUrl = chrome.extension.getURL("images/Netflix.png");
+			$(rowDetails.row).find("td.availableAt")
+			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
+					imgUrl + "'></img></a></div>");
+		}
+		
+		rowDetails.this.searcher.readyForNext(nextRow);
+	}
+	
+	function titlesCallback(dataXml) {
+    	var rowDetails = this;
+    	
+//    	console.info(rowDetails.title, data);
+    	var title = null;
+    	$(dataXml).find("catalog_title").each(function(candidate) {
+    		var candidateTitle = $("title", this).attr("short");
+    		var candidateYear = $("release_year", this).text();
+    		if (candidateTitle == rowDetails.title && candidateYear == rowDetails.releaseYear) {
+    			title = $(this);
+    			return false;
+    		}
+    	});
+    	
+    	if (title == null) {
+//    		console.log("No matching years for "+rowDetails.title);
+    		rowDetails.this.searcher.readyForNext(nextRow);
+    		return;
+    	}
+    	
+    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
+    	var href = link.attr("href");
+//    	console.info(title, link.length, link, href);
+    	
+    	rowDetails.titleXml = title;
+    	
+		if (href === undefined) {
+    		rowDetails.this.searcher.readyForNext(nextRow);
+			return;
+		}
+		
+		rowDetails.this.invoker.invoke(href, [], rowDetails, "xml", formatCallback);
+	}
+	
+	function nextRow(rowDetails) {
+		rowDetails.this = this;
+		
+		var parameters = [];
+	    parameters.push(["term", rowDetails.title]);
+	    parameters.push(["start_index", "0"]);
+	    parameters.push(["max_results", "3"]);
+	    
+	    this.invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", 
+	    		titlesCallback);
+	}
+	
+	this.searcher = new Searcher(this, rows, netflixAccessor, 
+			250 // Netflix allows 10 calls per sec and it takes 2 per row
+			);
+	ProcessTooltip.addSearcher(this.searcher);
+	this.searcher.readyForNext(nextRow);
+	this.invoker = new AvailableAt.Invoker(netflixAccessor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function Redbox() {
+	
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MAIN
+
 var compactList = $("div.list.compact");
-
-var progressTooltip;
-var ourHeaderCell;
-
-var rows;
-// Netflix allows 10 calls per sec and it takes 2 per row
-var perRowTimeout = 250; // ms
 var maxRows = 150;
-var stopWarzat = false;
 
 if (compactList.length > 0) {
 	// Make room for our column
@@ -45,124 +252,13 @@ if (compactList.length > 0) {
 	$("td.created").remove();
 	
 	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
-	ourHeaderCell = $("th.availableAt", compactList);
+	ProcessTooltip.ourHeaderCell = $("th.availableAt", compactList);
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
-	var invoker = new AvailableAt.Invoker(netflixAccessor);
-	
-	var nowSec = Date.now() / 1000;
-
-	rows = $.makeArray($("tr.list_item"));
+	var rows = $.makeArray($("tr.list_item"));
 	if (rows.length > maxRows) {
 		rows.splice(maxRows);
 	}
 	
-	setTimeout(processNextRow, 1);
-}
-
-function processNextRow() {
-//	console.info("Checking for more", rows.length);
-	if (!stopWarzat && rows.length > 0) {
-		if (progressTooltip === undefined) {
-			progressTooltip = $("<div id='warzatProgressPopup'>" +
-					"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
-					"</div>").appendTo("body");
-			progressTooltip.position({
-				my: "left bottom",
-				at: "left top-15",
-				of: ourHeaderCell,
-				collision: "none"
-			});
-			progressTooltip.show("fade");
-			
-			$("#btnStopWarzat").click(function(evt){
-				evt.preventDefault();
-				stopWarzat = true;
-			});
-			
-		}
-		$("#warzatProgressCount").text(rows.length);
-		
-		processListItem(rows.shift());
-		return true;
-	}
-	else {
-		progressTooltip.hide("puff");
-		return false;
-	}
-}
-
-function processListItem(row) {
-
-	var type = $("td.title_type", row).text();
-	
-	if (type == "Feature" || type == "Documentary" || type == "TV Series") {
-		
-		var title = $("td.title > a", row).text();
-		
-		var rowDetails = {
-			row: row,
-			title: title,
-			releaseYear: $("td.year", row).text()
-		}
-		
-		var parameters = [];
-	    parameters.push(["term", title]);
-	    parameters.push(["start_index", "0"]);
-	    parameters.push(["max_results", "3"]);
-	    
-	    invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", function(data){
-	    	var rowDetails = this;
-	    	
-//	    	console.info(rowDetails.title, data);
-	    	var title = null;
-	    	$(data).find("catalog_title").each(function(candidate) {
-	    		var candidateTitle = $("title", this).attr("short");
-	    		var candidateYear = $("release_year", this).text();
-	    		if (candidateTitle == rowDetails.title && candidateYear == rowDetails.releaseYear) {
-	    			title = $(this);
-	    			return false;
-	    		}
-	    	});
-	    	
-	    	if (title == null) {
-//	    		console.log("No matching years for "+rowDetails.title);
-	    		return;
-	    	}
-	    	
-	    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
-	    	var href = link.attr("href");
-//	    	console.info(title, link.length, link, href);
-	    	
-	    	lookupNetflixFormatAvailability(href, { 
-    			row: rowDetails.row,
-    			title: title 
-	    	})
-	    });
-	}
-	
-	setTimeout(processNextRow, perRowTimeout);
-}
-
-function lookupNetflixFormatAvailability(href, rowInfo) {
-	if (href === undefined) {
-		return;
-	}
-	
-	invoker.invoke(href, [], rowInfo, "xml", function(formatData){
-//		console.info(formatData);
-		
-		var instantWatchInfo = $(formatData).find("availability:has(category[term='instant'])");
-		
-		if (instantWatchInfo.length > 0
-				&& nowSec > instantWatchInfo.attr("available_from") 
-				&& nowSec < instantWatchInfo.attr("available_until")) {
-			var webPageHref = $(this.title).find("link[rel='alternate']").attr("href");
-			var imgUrl = chrome.extension.getURL("images/Netflix.png");
-			$(this.row).find("td.availableAt")
-			.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View Netflix page in a new window' src='" +
-					imgUrl + "'></img></a></div>");
-		}
-	});
-
+	new Netflix(rows);
 }
