@@ -1,8 +1,8 @@
 {
-  "name": "IMDB Watchlist Warzat",
-  "version": "1.3.1",
+  "name": "IMDb Watchlist Warzat",
+  "version": "1.3.2",
   "manifest_version": 2,
-  "description": "Decorates your IMDB watchlist with an indicator and a link when a movie is available for Netflix or Redbox streaming.",
+  "description": "Decorates your IMDb watchlist with an indicator and a link when a movie is available for Netflix or Redbox streaming.",
   
   "content_scripts": [
     {
