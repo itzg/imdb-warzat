@@ -272,7 +272,12 @@ function Redbox(rows) {
 		
 		var moviesResult = data.Products.Movie;
 		
-		if (moviesResult != undefined && moviesResult.length > 0) {
+		if (moviesResult != undefined) {
+			// Normalize the variable to be an array. If only one is returned, then
+			// Redbox gives us a single field.
+			if (!$.isArray(moviesResult)) {
+				moviesResult = [ moviesResult ];
+			}
 			var dvdPos = -1;
 			var blurayPos = -1;
 			
