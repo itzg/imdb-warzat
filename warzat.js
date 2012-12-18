@@ -9,7 +9,7 @@ AvailableAt.Invoker = function(accessor) {
 }
 
 AvailableAt.Invoker.prototype = {
-	invoke: function(url, parameters, context, dataType, handler) {
+	invoke: function(url, parameters, context, dataType, handler, errorHandler) {
 	    var message = { 
 	    		method: "GET",
 				action: url
@@ -23,6 +23,7 @@ AvailableAt.Invoker.prototype = {
 		
 		$.ajax(urlToCall, {
 			success: handler,
+			error: errorHandler,
 			context: context,
 			dataType: dataType
 		});
@@ -233,7 +234,7 @@ function Netflix(rows) {
 			return;
 		}
 		
-		rowDetails.me.invoker.invoke(href, [], rowDetails, "xml", formatCallback);
+		rowDetails.me.invoker.invoke(href, [], rowDetails, "xml", formatCallback, errorCallback);
 	}
 	
 	function errorCallback(jqXHR, textStatus, errorThrown) {
