@@ -1,4 +1,4 @@
-
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -135,7 +135,7 @@ Searcher.prototype = {
 					ProgressTooltip.update();
 					return;
 				}
-				type = $("td.title_type", row).text();
+				type = $("td.title_type", row).text().trim();
 			}
 			
 			var title = $("td.title > a", row).text();
@@ -143,6 +143,7 @@ Searcher.prototype = {
 			var rowDetails = {
 				row: row,
 				title: title,
+				type: type,
 				releaseYear: $("td.year", row).text()
 			}
 
@@ -360,6 +361,73 @@ function Redbox(rows) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function Hulu(rows) {
+	function queryCallback(xmlData) {
+		var rowDetails = this;
+		
+		var videoXml = null;
+		// Need to find the one with an exact match
+		$(xmlData).find("results > videos > video").each(function() {
+			if ($(this).find("show > name").text() == rowDetails.title) {
+				videoXml = $(this);
+				return false; // break out of each-loop
+			}
+		})
+		
+		if (videoXml != null) {
+			var huluPlusIndicator = videoXml.find("show > has-plus-living-room");
+			if (huluPlusIndicator.length > 0 && huluPlusIndicator.text() == "true") {
+				var urlName = videoXml.find("show > canonical-name");
+				var url = "#";
+				if (urlName.length > 0) {
+					url = "http://www.hulu.com/" + urlName.text();
+				}
+				rowDetails.me.searcher.addBadge(rowDetails, url);
+			}
+		}
+		
+		rowDetails.me.searcher.readyForNext(nextRowCallback);
+	}
+	
+	function errorCallback(jqXHR, textStatus, errorThrown) {
+		console.error("Hulu query failed", this, textStatus, errorThrown);
+		this.me.searcher.readyForNext(nextRowCallback);
+	}
+	
+	function nextRowCallback(rowDetails) {
+		if (rowDetails.type != "TV Series") {
+			this.searcher.readyForNext(nextRowCallback);
+			return;
+		}
+		
+		rowDetails.me = this;
+		
+		$.ajax("http://m.hulu.com/search", {
+			data: {
+				"dp_identifier": "Hulu",
+			    "query": rowDetails.title,
+			    "items_per_page": this.itemsPerPage,
+			    "page": "1"
+			},
+			context: rowDetails,
+			success: queryCallback,
+			error: errorCallback,
+			dataType: "xml"
+		});
+	}
+	
+	this.itemsPerPage = 10;
+	
+	this.searcher = new Searcher(this, rows, null, 
+			250,
+			"Hulu.png"
+			);
+	ProgressTooltip.addSearcher(this.searcher);
+	this.searcher.readyForNext(nextRowCallback);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
 var compactList = $("div.list.compact");
@@ -384,4 +452,5 @@ if (compactList.length > 0) {
 	
 	new Netflix(rows);
 	new Redbox(rows);
+	new Hulu(rows);
 }
