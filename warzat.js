@@ -289,7 +289,8 @@ function Redbox(rows) {
 				// Need to look for exact match of title and release year. We'll get
 				// substring matches back from Redbox and could get prior releases
 				// with same title.
-				if (moviesResult[i]["Title"] == rowDetails.title 
+				if ((moviesResult[i]["Title"] == rowDetails.title 
+							|| moviesResult[i]["Title"] == rowDetails.title+" ("+rowDetails.releaseYear+")")
 						&& moviesResult[i]["ReleaseYear"] == rowDetails.releaseYear) {
 					var format = moviesResult[i]["@format"];
 					if (format == "DVD") {
