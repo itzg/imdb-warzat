@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <pivoted-counts>
+        <company-counts type="array">
+            <company-count>
+                <count type="integer">13</count>
+                <pivot-value>new video group</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">138</count>
+                <pivot-value>abc</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">163</count>
+                <pivot-value>syfy</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>a&e</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">85</count>
+                <pivot-value>fox television classics</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>criterion collection</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>hulu original series</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">5</count>
+                <pivot-value>hulu</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">4</count>
+                <pivot-value>content family</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>eone entertainment distribution</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>abc news</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>ign</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>filmbuff</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>the onion</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>national geographic channel</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">33</count>
+                <pivot-value>funimation</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>content media corporation</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>mgm</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>anchor bay entertainment</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>digital artists</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>tvguide</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">11</count>
+                <pivot-value>scott entertainment</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>pbs</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">15</count>
+                <pivot-value>universal pictures</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>rt</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>gravitas</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>g4</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>moshcam</pivot-value>
+            </company-count>
+        </company-counts>
+        <showname-counts type="array">
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC 20/20</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC Nightline</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC World News with Diane Sawyer</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>America's Lost Treasures</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Being Human</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Border Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Celebrity Interviews</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Elsewhere</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Eureka</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">4</count>
+                <pivot-value>Fractale</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">27</count>
+                <pivot-value>Heaven's Lost Property</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Guyver: The Bioboosted Armor</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Spoilers with Kevin Smith</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Return to the Lost World</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Lost (2004)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Hollywood News</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Lost Stallions: Journey Home</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">84</count>
+                <pivot-value>Lost in Space</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Glades</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">5</count>
+                <pivot-value>Movie Trailers</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">3</count>
+                <pivot-value>Lost in Translation</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">13</count>
+                <pivot-value>Pirate Islands: The Lost Treasure of Fiji</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Big Picture</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Stallions</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Onion News Network</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Honor of Katharina Blum</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Coast</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Kung Fu Secrets</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost World (1992)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">138</count>
+                <pivot-value>Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Videogame Trailers</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">7</count>
+                <pivot-value>The Lost World</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>How I Got Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Killer Hope</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Missile</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Moshcam</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>PBS Specials</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">160</count>
+                <pivot-value>Lost Girl</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Pretender</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost World (1925)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">10</count>
+                <pivot-value>The Lost Films of Laurel and Hardy</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">3</count>
+                <pivot-value>IGN</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Jack Hunter and the Lost Treasure of Ugarit</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">5</count>
+                <pivot-value>Lost Highway</pivot-value>
+            </showname-count>
+        </showname-counts>
+        <type-counts type="array">
+            <type-count>
+                <count type="integer">177</count>
+                <pivot-value>clip</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">15</count>
+                <pivot-value>feature_film</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">284</count>
+                <pivot-value>episode</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">5</count>
+                <pivot-value>film_trailer</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">15</count>
+                <pivot-value>film_clip</pivot-value>
+            </type-count>
+        </type-counts>
+        <special-feature-counts type="array">
+            <special-feature-count>
+                <count type="integer">163</count>
+                <pivot-value>Closed Captioning</pivot-value>
+            </special-feature-count>
+        </special-feature-counts>
+    </pivoted-counts>
+    <count type="integer">496</count>
+    <filtered-pivoted-counts>
+        <company-counts type="array">
+            <company-count>
+                <count type="integer">13</count>
+                <pivot-value>new video group</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">138</count>
+                <pivot-value>abc</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">163</count>
+                <pivot-value>syfy</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>a&e</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">85</count>
+                <pivot-value>fox television classics</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>criterion collection</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>hulu original series</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">5</count>
+                <pivot-value>hulu</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">4</count>
+                <pivot-value>content family</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>eone entertainment distribution</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>abc news</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>ign</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>filmbuff</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>the onion</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>national geographic channel</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">33</count>
+                <pivot-value>funimation</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">3</count>
+                <pivot-value>content media corporation</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>mgm</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>anchor bay entertainment</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>digital artists</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>tvguide</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">11</count>
+                <pivot-value>scott entertainment</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>pbs</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">15</count>
+                <pivot-value>universal pictures</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>rt</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">2</count>
+                <pivot-value>gravitas</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>g4</pivot-value>
+            </company-count>
+            <company-count>
+                <count type="integer">1</count>
+                <pivot-value>moshcam</pivot-value>
+            </company-count>
+        </company-counts>
+        <showname-counts type="array">
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC 20/20</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC Nightline</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>ABC World News with Diane Sawyer</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>America's Lost Treasures</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Being Human</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Border Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Celebrity Interviews</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Elsewhere</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Eureka</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">4</count>
+                <pivot-value>Fractale</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">27</count>
+                <pivot-value>Heaven's Lost Property</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Guyver: The Bioboosted Armor</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">2</count>
+                <pivot-value>Spoilers with Kevin Smith</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Return to the Lost World</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Lost (2004)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Hollywood News</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Lost Stallions: Journey Home</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">84</count>
+                <pivot-value>Lost in Space</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Glades</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">5</count>
+                <pivot-value>Movie Trailers</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">3</count>
+                <pivot-value>Lost in Translation</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">13</count>
+                <pivot-value>Pirate Islands: The Lost Treasure of Fiji</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Big Picture</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Stallions</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Onion News Network</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Honor of Katharina Blum</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Coast</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Kung Fu Secrets</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost World (1992)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">138</count>
+                <pivot-value>Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Videogame Trailers</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">7</count>
+                <pivot-value>The Lost World</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>How I Got Lost</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Killer Hope</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost Missile</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Moshcam</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>PBS Specials</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">160</count>
+                <pivot-value>Lost Girl</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Pretender</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>The Lost World (1925)</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">10</count>
+                <pivot-value>The Lost Films of Laurel and Hardy</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">3</count>
+                <pivot-value>IGN</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">1</count>
+                <pivot-value>Jack Hunter and the Lost Treasure of Ugarit</pivot-value>
+            </showname-count>
+            <showname-count>
+                <count type="integer">5</count>
+                <pivot-value>Lost Highway</pivot-value>
+            </showname-count>
+        </showname-counts>
+        <type-counts type="array">
+            <type-count>
+                <count type="integer">177</count>
+                <pivot-value>clip</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">15</count>
+                <pivot-value>feature_film</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">284</count>
+                <pivot-value>episode</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">5</count>
+                <pivot-value>film_trailer</pivot-value>
+            </type-count>
+            <type-count>
+                <count type="integer">15</count>
+                <pivot-value>film_clip</pivot-value>
+            </type-count>
+        </type-counts>
+        <special-feature-counts type="array">
+            <special-feature-count>
+                <count type="integer">163</count>
+                <pivot-value>Closed Captioning</pivot-value>
+            </special-feature-count>
+        </special-feature-counts>
+    </filtered-pivoted-counts>
+    <search-type>general_search</search-type>
+    <videos type="array">
+        <video>
+            <allow-international type="boolean">false</allow-international>
+            <allow-progressive-download type="boolean" />
+            <alternate-video-id type="integer" />
+            <alternate-video-type />
+            <aspect-ratio>16x9</aspect-ratio>
+            <backup-pid />
+            <categories>Episodes</categories>
+            <channel>ABC</channel>
+            <channels>Drama|Science Fiction~Science Fiction - Thriller</channels>
+            <collation-title>end</collation-title>
+            <company-id type="integer">231</company-id>
+            <content-id>50058465</content-id>
+            <content-rating>TV-14</content-rating>
+            <content-rating-reason>V,L</content-rating-reason>
+            <copyright>ABC Studios</copyright>
+            <cp-identifier>ABC</cp-identifier>
+            <daypart>Prime Time</daypart>
+            <default-region>US</default-region>
+            <default-text-language>en</default-text-language>
+            <description>The battle lines are drawn as Locke puts his plan into action, which could finally liberate him from the island.</description>
+            <duration type="decimal">6338.5</duration>
+            <eid>r1cLKd9D7Uq_YGMaP9aLdw</eid>
+            <embed-permitted type="boolean">true</embed-permitted>
+            <end-credits-time>01:45:04;00</end-credits-time>
+            <episode-number type="integer">17</episode-number>
+            <external-id>2981888</external-id>
+            <feed-last-modified-at type="datetime">2012-12-08T01:53:18Z</feed-last-modified-at>
+            <first-available-at type="datetime">2010-09-03T17:00:00Z</first-available-at>
+            <forced-popularity type="integer">0</forced-popularity>
+            <frame-rate>24</frame-rate>
+            <full-description>One of the most critically-acclaimed and groundbreaking shows of the past decade concludes in this LOST Series Finale Event. The battle lines are drawn as Locke puts his plan into action, which could finally liberate him from the island.</full-description>
+            <game-season type="integer" />
+            <has-captions type="boolean">true</has-captions>
+            <has-hd type="boolean">true</has-hd>
+            <has-mobile type="boolean">false</has-mobile>
+            <has-plus-living-room type="boolean">true</has-plus-living-room>
+            <has-plus-mobile type="boolean">true</has-plus-mobile>
+            <has-plus-preview type="boolean">true</has-plus-preview>
+            <has-plus-web type="boolean">true</has-plus-web>
+            <id type="integer">151655</id>
+            <is-browseable type="boolean">true</is-browseable>
+            <is-html5-enabled type="boolean">false</is-html5-enabled>
+            <is-mature type="boolean">false</is-mature>
+            <is-placeholder type="boolean">false</is-placeholder>
+            <is-placeholder-email-pending type="boolean">false</is-placeholder-email-pending>
+            <keywords>Michelle,Rodriguez,Ana,Lucia,Cortez,Michael,Emerson,Benjamin,Linus,Dominic,Monaghan,Charlie,Pace,Rebecca,Mader,Charlotte,Lewis,Emilie,de,Ravin,Claire,Littleton,Jeremy,Davies,Daniel,Faraday,Henry,Ian,Cusick,Desmond,Hume,Jeff,Fahey,Frank,Lapidus,Jorge,Garcia,Hugo,Reyes,,Hurley,Matthew,Fox,Jack,Shephard,Josh,Holloway,James,Ford,,Sawyer,Daniel,Dae,Kim,Jin-Soo,Kwon,Terry,O'Quinn,John,Locke,Elizabeth,Mitchell,Juliet,Burke,Evangeline,Lilly,Kate,Austen,Harold,Perrineau,Michael,Dawson,Ken,Leung,Miles,Straume,Nestor,Carbonell,Richard,Alpert,Naveen,Andrews,Sayid,Jarrah,Yunjin,Kim,Sun,Kwon,series,finale,island,dharma,oceanic,815,event</keywords>
+            <language>en</language>
+            <last-modified type="timestamp">Tue Dec 18 19:06:06 UTC 2012</last-modified>
+            <last-processed-subscriptions-at type="datetime">2010-09-03T17:15:07Z</last-processed-subscriptions-at>
+            <legacy-eid />
+            <legacy-eid-2 />
+            <mashup-permitted type="boolean" />
+            <masthead-description />
+            <media-type>TV</media-type>
+            <original-premiere-date type="datetime">2010-05-23T00:00:00Z</original-premiere-date>
+            <pid>NO_MORE_RELEASES_PLEASE_50058465</pid>
+            <plus-first-available-at type="datetime">2010-09-03T17:00:00Z</plus-first-available-at>
+            <plus-last-processed-subscriptions-at type="datetime" />
+            <plus-living-room-available-at type="datetime" />
+            <plus-living-room-expires-at type="datetime" />
+            <plus-mobile-available-at type="datetime" />
+            <plus-mobile-expires-at type="datetime" />
+            <plus-web-available-at type="datetime" />
+            <plus-web-expires-at type="datetime" />
+            <positive-votes-count type="integer">23549</positive-votes-count>
+            <programming-priority type="integer" />
+            <programming-type>Full Episode</programming-type>
+            <promotional-link />
+            <promotional-text />
+            <promotional-type>non-promo</promotional-type>
+            <rating type="float">4.32924</rating>
+            <recommended type="boolean">false</recommended>
+            <released-at type="datetime">2010-05-24T05:35:04Z</released-at>
+            <reviews-count type="integer">206</reviews-count>
+            <season-number type="integer">6</season-number>
+            <segments />
+            <show-id type="integer">2400</show-id>
+            <studio />
+            <tags />
+            <thumbnail-url>http://ib2.huluim.com/video/50058465?size=145x80&img=1</thumbnail-url>
+            <title>The End</title>
+            <tms-program-id>EP006723620161</tms-program-id>
+            <tms-series-id>SH006723620000</tms-series-id>
+            <tune-in-information />
+            <video-game-id type="integer" />
+            <video-type>episode</video-type>
+            <votes-count type="integer">5286</votes-count>
+            <score type="float">30.507965</score>
+            <embed-codes />
+            <user-star-rating type="float">4.32924</user-star-rating>
+            <canonical-name>lost-the-end</canonical-name>
+            <available-at type="datetime">1970-01-01T00:00:00Z</available-at>
+            <expires-at type="datetime">1970-01-02T00:00:00Z</expires-at>
+            <classic-available-at type="datetime">2010-09-03T17:00:00Z</classic-available-at>
+            <classic-expires-at type="datetime">2010-09-20T09:00:00Z</classic-expires-at>
+            <valid-available-at type="datetime">1970-01-01T00:00:00Z</valid-available-at>
+            <valid-expires-at type="datetime">1970-01-02T00:00:00Z</valid-expires-at>
+            <has-auth type="boolean">false</has-auth>
+            <auth-available-at />
+            <auth-expires-at />
+            <is-auth-valid type="boolean">false</is-auth-valid>
+            <has-annotation type="boolean">false</has-annotation>
+            <is-subscriber-only type="boolean">true</is-subscriber-only>
+            <is-web-only type="boolean">false</is-web-only>
+            <show>
+                <audit-url />
+                <availability-image />
+                <canonical-name>lost</canonical-name>
+                <category-order />
+                <clips-count type="integer">0</clips-count>
+                <collation-name>lost</collation-name>
+                <collation-title>lost</collation-title>
+                <company-id type="integer">231</company-id>
+                <content-age-group>Library</content-age-group>
+                <default-region>US</default-region>
+                <default-text-language>en</default-text-language>
+                <description>ABC's LOST explores the destiny of the passengers of Oceanic Flight 815 who crashed on an island. The survivors not only have to rely on each other, but also cope with the secrets the mysterious island holds. Some become friends, others enemies and some stories remain to be told. There's much more than meets the eye, as it becomes apparent that everyone is somehow connected and that everyone has a purpose.</description>
+                <embed-permitted type="boolean">true</embed-permitted>
+                <end-date type="datetime">2010-05-28T00:00:00Z</end-date>
+                <episodes-count type="integer">0</episodes-count>
+                <feature-films-count type="integer">0</feature-films-count>
+                <forced-popularity type="integer">0</forced-popularity>
+                <genre>Drama</genre>
+                <genres>Drama|Science Fiction~Science Fiction - Thriller</genres>
+                <has-hd type="boolean">true</has-hd>
+                <has-plus-living-room type="boolean">true</has-plus-living-room>
+                <has-plus-mobile type="boolean">true</has-plus-mobile>
+                <has-plus-web type="boolean">true</has-plus-web>
+                <hulu-premiere-date type="datetime" />
+                <id type="integer">2400</id>
+                <is-browseable type="boolean">true</is-browseable>
+                <is-movie type="boolean">false</is-movie>
+                <last-modified type="timestamp">Tue Dec 18 20:40:41 UTC 2012</last-modified>
+                <link-description>For more information visit the official <a href="http://abc.go.com/primetime/lost/" target="_blank">Lost website</a></link-description>
+                <link-url>http://assets.hulu.com/networklogos/abc-preroll-480k.flv</link-url>
+                <name>Lost</name>
+                <original-premiere-date type="datetime">2004-09-22T00:00:00Z</original-premiere-date>
+                <plus-company-id type="integer" />
+                <plus-web-seasons-count type="integer">6</plus-web-seasons-count>
+                <plus-web-videos-count type="integer">138</plus-web-videos-count>
+                <positive-votes-count type="integer">293768</positive-votes-count>
+                <released-at type="datetime">2009-08-28T09:24:04Z</released-at>
+                <reviews-count type="integer">143</reviews-count>
+                <seasons-count type="integer">0</seasons-count>
+                <series-id type="integer">12069</series-id>
+                <tms-series-id>SH006723620000</tms-series-id>
+                <videos-count type="integer">0</videos-count>
+                <votes-count type="integer">74312</votes-count>
+                <user-star-rating type="float">4.28423407584223</user-star-rating>
+                <is-subscriber-only type="boolean">true</is-subscriber-only>
+                <games-count type="integer">0</games-count>
+                <film-clips-count type="integer">0</film-clips-count>
+                <channels />
+                <channels-with-plus>Drama|Science Fiction~Science Fiction - Thriller</channels-with-plus>
+                <art-copyright />
+            </show>
+            <company>
+                <background-color />
+                <channel-id type="integer">282</channel-id>
+                <collation-name>ABC</collation-name>
+                <default-region>US</default-region>
+                <default-text-language>en</default-text-language>
+                <description />
+                <id type="integer">231</id>
+                <key-art />
+                <key-art-background />
+                <last-modified type="timestamp">Mon Oct 15 02:45:15 UTC 2012</last-modified>
+                <link-url />
+                <name>ABC</name>
+                <short-name>ABC</short-name>
+                <text-color />
+                <website-url />
+                <display-name>ABC</display-name>
+                <short-display-name>ABC</short-display-name>
+                <uber-company-id type="integer">231</uber-company-id>
+            </company>
+        </video>
+    </videos>
+    <show-name-set type="array" />
+    <st type="integer">0</st>
+    <result-set-id type="integer">-1</result-set-id>
+    <missed-show-set type="array" />
+    <suggestions nil="true" />
+</results>

@@ -156,3 +156,9 @@ Under the path: `results/videos/video[0]/show/`
 * `name` is the actual show name
 * `has-plus-living-room` with a value of `true` is probably the indicator we want
 * There are some other elements that start with `has-plus-` or `plus-` that might be useful
+
+The URL seems to be formed by appending the `canonical-name`, such as
+
+	<canonical-name>drawn-together</canonical-name>
+
+to the base URL http://www.hulu.com/
