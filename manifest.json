@@ -19,12 +19,16 @@
   
   "permissions": [
       "http://api-public.netflix.com/",
-      "https://api.redbox.com/"
+      "https://api.redbox.com/",
+      "http://m.hulu.com/",
+      
+      "storage"
   ],
   
   "web_accessible_resources": [
     "images/Netflix.png",
-    "images/Redbox.png"
+    "images/Redbox.png",
+    "images/Hulu.png"
   ],
   
   "icons": { "16": "icon16.png",

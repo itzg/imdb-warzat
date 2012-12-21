@@ -428,6 +428,11 @@ function Hulu(rows) {
 	this.searcher.readyForNext(nextRowCallback);
 }
 
+function isServiceEnabled(serviceId) {
+	var enabled = localStorage["warzat-"+serviceId];
+	return enabled === undefined || enabled == "true";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
@@ -451,7 +456,16 @@ if (compactList.length > 0) {
 		rows.splice(maxRows);
 	}
 	
-	new Netflix(rows);
-	new Redbox(rows);
-	new Hulu(rows);
+	var servicesIn = {
+		// specify services and their defaults
+		"netflix": true,
+		"redbox": true,
+		"hulu": true
+	};
+	chrome.storage.sync.get(servicesIn, function(servicesSaved) {
+		servicesSaved["netflix"] && new Netflix(rows);
+		servicesSaved["redbox"] && new Redbox(rows);
+		servicesSaved["hulu"] && new Hulu(rows);
+	});
+	
 }
