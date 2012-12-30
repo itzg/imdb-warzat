@@ -1,0 +1,9 @@
+@CHARSET "ISO-8859-1";
+
+.hidden {
+    display: none;
+}
+
+fieldset+fieldset {
+	margin-top: 20px;
+}

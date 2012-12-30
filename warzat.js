@@ -268,7 +268,65 @@ function Netflix(rows) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function Redbox(rows) {
+function Redbox(rows, options) {
+	// Set options
+	this["zip-code"] = 0;
+	this["search-radius"] = 0;
+	$.extend(this, options);
+
+	// Redbox is crazy slow, so we'll trim the search list aggressively
+	var rowsToSearch = rows.slice(0, Math.min(maxRowsRedbox, rows.length));
+	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
+			250,
+			"Redbox.png"
+			);
+	ProgressTooltip.addSearcher(this.searcher);
+	this.searcher.readyForNext(nextRow);
+	
+	//// Private Methods ////
+	
+	function addBadge(rowDetails, websiteUrl) {
+		rowDetails.me.searcher.addBadge(rowDetails, websiteUrl);
+	}
+	
+	function queryByZipcodeCallback(data) {
+		var rowDetails = this;
+		
+		var storeInventory = data.Inventory.StoreInventory;
+		if (storeInventory != undefined) {
+			for (var si = 0; si < storeInventory.length; ++si) {
+				if (storeInventory[si].ProductInventory["@inventoryStatus"] == "InStock") {
+					addBadge(rowDetails, rowDetails.websiteUrl);
+					break;
+				}
+			}
+		}
+	}
+	
+	// NOTE: this will be processed concurrently with next row's request
+	function processAvailableAt(rowDetails, productId, websiteUrl) {
+		if (rowDetails.me["zip-code"] > 0) {
+			rowDetails.websiteUrl = websiteUrl;
+			$.ajax("https://api.redbox.com/v3/inventory/stores/postalcode/"+rowDetails.me["zip-code"], {
+				data: {
+					apiKey: rowDetails.me.searcher.accessor.apiKey,
+					products: productId,
+					radius: rowDetails.me["search-radius"]
+				},
+				context: rowDetails,
+				success: queryByZipcodeCallback,
+				error: errorCallback,
+				headers: {"Accept":"application/json"},
+				dataType: "json"
+			});
+
+		}
+		else {
+			addBadge(rowDetails, websiteUrl);
+		}
+		
+	}
+
 	function queryCallback(data) {
 		var rowDetails = this;
 		
@@ -314,7 +372,8 @@ function Redbox(rows) {
 						var endDate = flag["@endDate"];
 						if (beginDate != undefined && Date.parse(beginDate) < now) {
 							if (endDate == undefined || Date.parse(endDate) > now) {
-								rowDetails.me.searcher.addBadge(rowDetails, 
+								processAvailableAt(rowDetails, 
+										moviesResult[moviesResultPos]["@productId"],
 										moviesResult[moviesResultPos]["@websiteUrl"]);
 							}
 						}
@@ -350,15 +409,6 @@ function Redbox(rows) {
 			dataType: "json"
 		});
 	}
-	
-	// Redbox is crazy slow, so we'll trim the search list aggressively
-	var rowsToSearch = rows.slice(0, Math.min(maxRowsRedbox, rows.length));
-	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
-			250,
-			"Redbox.png"
-			);
-	ProgressTooltip.addSearcher(this.searcher);
-	this.searcher.readyForNext(nextRow);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,16 +506,10 @@ if (compactList.length > 0) {
 		rows.splice(maxRows);
 	}
 	
-	var servicesIn = {
-		// specify services and their defaults
-		"netflix": true,
-		"redbox": true,
-		"hulu": true
-	};
-	chrome.storage.sync.get(servicesIn, function(servicesSaved) {
-		servicesSaved["netflix"] && new Netflix(rows);
-		servicesSaved["redbox"] && new Redbox(rows);
-		servicesSaved["hulu"] && new Hulu(rows);
+	chrome.storage.sync.get(optionValues, function(savedValues) {
+		savedValues["service-netflix"] && new Netflix(rows);
+		savedValues["service-redbox"] && new Redbox(rows, savedValues);
+		savedValues["service-hulu"] && new Hulu(rows);
 	});
 	
 }
