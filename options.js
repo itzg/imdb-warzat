@@ -1,6 +1,25 @@
 
 $(document).ready(function() {
 	loadOptions();
+
+	$("#search-limit").tooltip({
+		trigger: "manual",
+		title: "This is a free utility and the developer's API calls are metered. In turn your usage needs to be limited. Sorry."
+	});
+	
+	$("#search-limit").blur(function() {
+		var newLimit = new Number($("#search-limit").val());
+		if (isNaN(newLimit)) {
+			$("#search-limit").val(optionValues["search-limit"]);
+		}
+		else if (newLimit > maxSearchLimit) {
+			$("#search-limit").tooltip("show");
+			setTimeout(function() {
+				$("#search-limit").tooltip("hide");
+			}, 5000);
+			$("#search-limit").val(maxSearchLimit);
+		}
+	});
 	
 	$("#save").click(function(evt) {
 		evt.preventDefault();
@@ -15,6 +34,8 @@ $(document).ready(function() {
 			}
 		}
 		valuesToSave["zip-code"] = $("#zip-code").val();
+		
+		valuesToSave["search-limit"] = $("#search-limit").val();
 		
 		chrome.storage.sync.set(valuesToSave, function() {
 			$("#saved-alert").show();

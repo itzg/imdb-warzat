@@ -275,7 +275,7 @@ function Redbox(rows, options) {
 	$.extend(this, options);
 
 	// Redbox is crazy slow, so we'll trim the search list aggressively
-	var rowsToSearch = rows.slice(0, Math.min(maxRowsRedbox, rows.length));
+	var rowsToSearch = rows.slice(0, Math.min(maxRows, rows.length));
 	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
 			250,
 			"Redbox.png"
@@ -487,8 +487,7 @@ function isServiceEnabled(serviceId) {
 // MAIN
 
 var compactList = $("div.list.compact");
-var maxRows = 100;
-var maxRowsRedbox = 30;
+var maxRows = optionValues["search-limit"];
 
 if (compactList.length > 0) {
 	// Make room for our column
@@ -501,12 +500,16 @@ if (compactList.length > 0) {
 	ProgressTooltip.ourHeaderCell = $("th.availableAt", compactList);
 	$("td.title", compactList).after("<td class='availableAt'></td>");
 	
-	var rows = $.makeArray($("tr.list_item"));
-	if (rows.length > maxRows) {
-		rows.splice(maxRows);
-	}
-	
 	chrome.storage.sync.get(optionValues, function(savedValues) {
+		if (savedValues["search-limit"]) {
+			maxRows = savedValues["search-limit"];
+		}
+		
+		var rows = $.makeArray($("tr.list_item"));
+		if (rows.length > maxRows) {
+			rows.splice(maxRows);
+		}
+
 		savedValues["service-netflix"] && new Netflix(rows);
 		savedValues["service-redbox"] && new Redbox(rows, savedValues);
 		savedValues["service-hulu"] && new Hulu(rows);
