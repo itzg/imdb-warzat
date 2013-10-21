@@ -4,7 +4,7 @@
 <meta charset="ISO-8859-1">
 <title>IMDb Warzat Options</title>
 <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" />
-
+<link href="lib/select2-3.4.3/select2.css" rel="stylesheet" media="screen" />
 <link href="options.css" rel="stylesheet" media="screen" />
 
 <style type="text/css">
@@ -12,7 +12,11 @@
 
 <script src="lib/jquery-1.8.3.min.js"></script>
 <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="lib/select2-3.4.3/select2.js"></script>
+<script src="lib/md5.js"></script>
+<script src="secrets.js"></script>
 <script src="options-common.js"></script>
+<script src="tv-listings.js"></script>
 <script src="options.js"></script>
 
 </head>
@@ -29,24 +33,39 @@
 					<div class="controls">
 						<label class="checkbox"> <input type="checkbox" id="service-netflix" value=""> <img
 							alt="Netflix Streaming" src="images/Netflix.png">
-						</label> <label class="checkbox"> <input type="checkbox" id="service-redbox" value=""> <img
+						</label> 
+						<label class="checkbox"> <input type="checkbox" id="service-redbox" value=""> <img
 							alt="Redbox Kiosk" src="images/Redbox.png">
-						</label> <label class="checkbox"> <input type="checkbox" id="service-hulu" value=""> <img
+						</label> 
+						<label class="checkbox"> <input type="checkbox" id="service-hulu" value=""> <img
 							alt="Hulu Plug" src="images/Hulu.png">
+						</label>
+						<label class="checkbox"> <input type="checkbox" id="service-tv" value=""> 
+						  TV Listings
 						</label>
 					</div>
 				</div>
 			</fieldset>
 
-			<fieldset>
-				<legend>Redbox<sup>&reg;</sup> search details</legend>
+            <fieldset>
+                <legend>Common Settings</legend>
 
-				<div class="control-group">
-					<label class="control-label">Zip code:</label>
-					<div class="controls">
-						<input id="zip-code" placeholder="Zip code" />
-					</div>
-				</div>
+                <div class="control-group">
+                    <label class="control-label">Zip code:</label>
+                    <div class="controls">
+                        <input id="zip-code" placeholder="Zip code" />
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Search limit:</label>
+                    <div class="controls">
+                        <input id="search-limit"/>
+                    </div>
+                </div>
+            </fieldset>
+
+			<fieldset id="redbox-settings" class="hidden">
+				<legend>Redbox<sup>&reg;</sup> search details</legend>
 
 				<div class="control-group">
 					<label class="control-label">Radius (in miles):</label>
@@ -55,17 +74,28 @@
 					</div>
 				</div>
 			</fieldset>
-			
-			<fieldset>
-				<legend>Other Details</legend>
-				<div class="control-group">
-					<label class="control-label">Search limit:</label>
-					<div class="controls">
-						<input id="search-limit"/>
-					</div>
-				</div>
-			</fieldset>
 
+            
+            <fieldset id="tv-settings" class="hidden">
+                <legend>TV Listings</legend>
+                
+                <div id="missing-zip-code-note" class="subtle">Please enter your zip code</div>
+
+                <div class="control-group hidden" id="tv-provider-group">
+                    <label class="control-label">Provider:</label>
+                    <div class="controls">
+                        <div id="tv-provider-controls"></div>
+                    </div>
+                </div>
+                <div class="control-group hidden" id="tv-channels-group">
+                    <label class="control-label">Channels:</label>
+                    <div class="controls">
+                        <div id="tv-channels-controls"></div>
+                    </div>
+                </div>
+            </fieldset>
+
+			
 			<div id="saved-alert" class="hidden alert alert-success">Saved.</div>
 			<div class="control-group">
 				<button type="submit" class="btn" id="save">Save</button>

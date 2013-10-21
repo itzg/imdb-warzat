@@ -91,7 +91,7 @@ ProgressTooltip.update = function() {
 
 function Searcher(context, rows, accessor, minRowPeriod, badgeImage) {
 	this.context = context;
-	// Need a copy of the given array so each searcher works of its own list
+	// Need a copy of the given array so each searcher works off its own list
 	this.rows = rows.slice(0);
 	this.accessor = accessor;
 	this.minRowPeriod = minRowPeriod;
@@ -160,6 +160,11 @@ Searcher.prototype = {
 		.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
 				imgUrl + "'></img></a></div>");
 
+	},
+	
+	addFreeformBadge: function(rowDetails, content) {
+		$(rowDetails.row).find("td.availableAt")
+		.append(content);
 	},
 	
 	stop: function() {
@@ -498,7 +503,7 @@ if (compactList.length > 0) {
 	
 	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
 	ProgressTooltip.ourHeaderCell = $("th.availableAt", compactList);
-	$("td.title", compactList).after("<td class='availableAt'></td>");
+	$("td.title", compactList).after("<td class='availableAt' style='text-align: left'></td>");
 	
 	chrome.storage.sync.get(optionValues, function(savedValues) {
 		if (savedValues["search-limit"]) {
@@ -513,6 +518,7 @@ if (compactList.length > 0) {
 		savedValues["service-netflix"] && new Netflix(rows);
 		savedValues["service-redbox"] && new Redbox(rows, savedValues);
 		savedValues["service-hulu"] && new Hulu(rows);
+		savedValues["service-tv"] && new TvListingsQuery(rows, savedValues);
 	});
 	
 }

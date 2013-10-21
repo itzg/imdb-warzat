@@ -7,3 +7,8 @@
 fieldset+fieldset {
 	margin-top: 20px;
 }
+
+.subtle {
+	color: "#111111";
+	font-style: italic;
+}
