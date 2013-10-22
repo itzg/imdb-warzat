@@ -2,6 +2,8 @@
 $(document).ready(function() {
 	
 	$(".hidden").hide();
+	
+	loadOptions();
 
 	$("#search-limit").tooltip({
 		trigger: "manual",
@@ -30,10 +32,6 @@ $(document).ready(function() {
 	$("#service-redbox").change(function(evt) {
 		$("#redbox-settings").toggle($("#service-redbox").get(0).checked);
 	});
-	
-	setupTvListings();
-	
-	loadOptions();
 });
 
 function saveOptions() {
@@ -57,7 +55,7 @@ function saveOptions() {
 
 function loadOptions() {
 	chrome.storage.sync.get(optionValues, function(savedValues){
-		console.log("got", savedValues);
+		console.debug("Loaded", savedValues);
 		for (var optionId in savedValues) {
 			console.log(optionId.toString());
 			if (optionId.indexOf("service-") == 0) {
@@ -67,14 +65,49 @@ function loadOptions() {
 				$("#"+optionId).val(savedValues[optionId]);
 			}
 		}
+		
+		setupTvListings(savedValues);
 	});
 }
 
+function getZipCode() {
+	return $("#zip-code").val();
+}
 
-function setupTvListings() {
+function setupTvListings(savedValues) {
 	
-	function setupChannels() {
-		if (!TvListings.serviceId) {
+	// Setup initial state
+	
+	var enabled = isTvListingsEnabled();
+	console.log("TV listings enabled", enabled);
+	$("#tv-settings").toggle(enabled);
+	handleZipCodeChange();
+	setupChannels(false);
+	
+	// Register events
+	
+	$("#service-tv").change(function(evt){
+		$("#tv-settings").toggle(isTvListingsEnabled());
+	});
+	
+	$("#zip-code").change(handleZipCodeChange);
+	
+	// Private functions
+	
+	function handleZipCodeChange() {
+		if (getZipCode().length == 5) {
+			$("#missing-zip-code-note").hide();
+			if (isTvListingsEnabled()) {
+				setupProviders();
+			}
+		}
+		else {
+			$("#missing-zip-code-note").show();
+		}
+	}
+	
+	function setupChannels(autoOpen) {
+		if (!getServiceId()) {
 			return;
 		}
 		
@@ -82,14 +115,42 @@ function setupTvListings() {
 		
 		var sel = $("<input id='tv-sources' type='hidden' style='width:500px'/>");
 		sel.appendTo("#tv-channels-controls");
-		
+		sel.val(savedValues["tv-sources"]);
+
 		sel.select2({
 			placeholder: "Choose channels to search",
 			allowClear: true,
 			multiple: true,
 			closeOnSelect: false,
+			initSelection : function (element, callback) {
+				
+		        $.getJSON("http://api.rovicorp.com/TVlistings/v9/listings/servicedetails/serviceid/"+getServiceId()+"/info", {
+                	locale: "en-US",
+                	countrycode: "US",
+                	format: "json",
+                	apikey: TvListings.apiKey,
+                	sig: TvListings.sig(),
+
+		        })
+		        .done(function(data){
+		        	var results = [];
+		        	var ourSourceIds = element.val().split(",");
+		        	
+		        	$.each(data.ServiceDetailsResult.ChannelLineup.Channels, function(i, channel) {
+		        		if (ourSourceIds.indexOf(String(channel.SourceId)) >= 0) {
+		        			results.push({
+		        				id: channel.SourceId,
+								channelNumber: channel.Channel,
+								displayName: channel.DisplayName
+		        			});
+		        		}
+		        	});
+		        	
+		        	callback(results);
+		        });
+		    },
 			ajax: {
-				url: "http://api.rovicorp.com/TVlistings/v9/listings/servicedetails/serviceid/"+TvListings.serviceId+"/info",
+				url: "http://api.rovicorp.com/TVlistings/v9/listings/servicedetails/serviceid/"+getServiceId()+"/info",
                 dataType: 'json',
                 cache: true,
 				data: function (term, page) {
@@ -127,15 +188,30 @@ function setupTvListings() {
 		});
 		
 		$("#tv-channels-group").show();
-		sel.select2("open");
+		if (autoOpen) {
+			sel.select2("open");
+		}
+	}
+	
+	function buildListingsServicesData() {
+        return {
+        	locale: "en-US",
+        	countrycode: "US",
+        	format: "json",
+        	apikey: TvListings.apiKey,
+        	sig: TvListings.sig()
+        };
+	}
+	
+	function buildServiceSelectRecord(service) {
+		return {id: service.ServiceId, text: service.Name};
 	}
 	
 	function setupProviders() {
 		$("#tv-provider-controls").empty();
 		$("#tv-channels-group").hide();
-		TvListings.serviceId = null;
 		
-		var zipcode = $("#zip-code").val();
+		var zipcode = getZipCode();
 		// extra saftey
 		if (zipcode.length != 5) {
 			return;
@@ -144,21 +220,29 @@ function setupTvListings() {
 		// For custom data loading, they say use this rather than <select/>
 		var sel = $("<input id='tv-provider' type='hidden' style='width:500px'/>");
 		sel.appendTo("#tv-provider-controls");
-		
+		sel.val(savedValues["tv-provider"]);
+
 		sel.select2({
 			placeholder: "Choose your provider",
+			initSelection : function (element, callback) {
+		        
+		        $.getJSON("http://api.rovicorp.com/TVlistings/v9/listings/services/postalcode/"+zipcode+"/info", buildListingsServicesData())
+		        .done(function(data){
+		        	var ourServiceId = getServiceId();
+		        	$.each(data.ServicesResult.Services.Service, function(i, service){
+		        		if (service.ServiceId == ourServiceId) {
+		        			callback(buildServiceSelectRecord(service));
+		        			return false;
+		        		}
+		        	});
+		        });
+		    },
             ajax: {
                 url: "http://api.rovicorp.com/TVlistings/v9/listings/services/postalcode/"+zipcode+"/info",
                 dataType: 'json',
                 cache: true,
                 data: function (term, page) {
-                    return {
-                    	locale: "en-US",
-                    	countrycode: "US",
-                    	format: "json",
-                    	apikey: TvListings.apiKey,
-                    	sig: TvListings.sig()
-                    };
+                	return buildListingsServicesData();
                 },
                 results: function (data, page) { 
                     return {results: $.map( data.ServicesResult.Services.Service, function(service){
@@ -170,28 +254,17 @@ function setupTvListings() {
 		});
 		
 		sel.change(function() {
-			TvListings.serviceId = sel.val();
-			setupChannels();
+			setupChannels(true);
 		});
-		
 		
 		$("#tv-provider-group").show();
 	}
 	
-	$("#service-tv").change(function(evt){
-		TvListings.enabled = $("#service-tv").get(0).checked;
-		$("#tv-settings").toggle(TvListings.enabled);
-	});
+	function getServiceId() {
+		return Number($("#tv-provider").val());
+	}
 	
-	$("#zip-code").change(function(evt) {
-		if ($("#zip-code").val().length == 5) {
-			$("#missing-zip-code-note").hide();
-			if (TvListings.enabled) {
-				setupProviders();
-			}
-		}
-		else {
-			$("#missing-zip-code-note").show();
-		}
-	});
+	function isTvListingsEnabled() {
+		return $("#service-tv").get(0).checked;
+	}
 }

@@ -1,15 +1,9 @@
 var TvListings = {
-	enabled: false,
-	
 	apiKey: roviTvListingApiKey,
 	
 	sig: function() {
 		return md5(TvListings.apiKey+""+(new Date().getTime()));
-	},
-	
-	serviceId: null,
-	
-	sourceIds: [],
+	}
 };
 
 function TvListingsQuery(rows, savedValues) {

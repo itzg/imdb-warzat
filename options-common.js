@@ -9,7 +9,6 @@ var optionValues = {
 	"zip-code" : null,
 	"search-radius" : 10,
 	"search-limit": 200,
-	"tv-zip-code": null,
 	"tv-sources": null,
 	"tv-provider": null
 };
