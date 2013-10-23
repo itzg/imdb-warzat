@@ -66,6 +66,10 @@ function loadOptions() {
 			}
 		}
 		
+		if ($("#service-redbox").get(0).checked) {
+			$("#redbox-settings").show();
+		}
+		
 		setupTvListings(savedValues);
 	});
 }
@@ -128,7 +132,7 @@ function setupTvListings(savedValues) {
                 	locale: "en-US",
                 	countrycode: "US",
                 	format: "json",
-                	apikey: TvListings.apiKey,
+                	apikey: roviAccessor.tvListingsApiKey,
                 	sig: TvListings.sig(),
 
 		        })
@@ -158,7 +162,7 @@ function setupTvListings(savedValues) {
 	                	locale: "en-US",
 	                	countrycode: "US",
 	                	format: "json",
-	                	apikey: TvListings.apiKey,
+	                	apikey: roviAccessor.tvListingsApiKey,
 	                	sig: TvListings.sig(),
 	                	includechannelimages: "true",
 	                	imageformatid: 31 /* 40x40, logo */
@@ -198,7 +202,7 @@ function setupTvListings(savedValues) {
         	locale: "en-US",
         	countrycode: "US",
         	format: "json",
-        	apikey: TvListings.apiKey,
+        	apikey: roviAccessor.tvListingsApiKey,
         	sig: TvListings.sig()
         };
 	}

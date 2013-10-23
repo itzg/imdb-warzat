@@ -12,3 +12,10 @@ fieldset+fieldset {
 	color: "#111111";
 	font-style: italic;
 }
+
+#tv-settings {
+	background-image: url('images/pbr-100.png');
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	padding-bottom: 31px;
+}

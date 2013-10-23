@@ -1,8 +1,6 @@
 var TvListings = {
-	apiKey: roviTvListingApiKey,
-	
 	sig: function() {
-		return md5(TvListings.apiKey+""+(new Date().getTime()));
+		return md5(roviAccessor.tvListingsApiKey+""+(new Date().getTime()));
 	}
 };
 
@@ -26,7 +24,7 @@ function TvListingsQuery(rows, savedValues) {
 			duration: 240,
 			sourceid: us.sourceIds.join(),
         	locale: "en-US",
-        	apikey: TvListings.apiKey,
+        	apikey: roviAccessor.tvListingsApiKey,
         	sig: TvListings.sig()
 		})
 	.done(function(data) {
