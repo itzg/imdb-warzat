@@ -1,5 +1,8 @@
 
 $(document).ready(function() {
+
+	var action = new Action();
+	action.save({what: "options-opened"});
 	
 	$(".hidden").hide();
 	
@@ -35,15 +38,28 @@ $(document).ready(function() {
 });
 
 function saveOptions() {
+	var action = new Action();
+	action.save({what: "options-saved"});
+	
+	var servicesUsed = new ServicesUsed();
+
 	var valuesToSave = {};
+	var services = [];
 	for (var optionId in optionValues) {
 		if (optionId.indexOf("service-") == 0) {
 			valuesToSave[optionId] = $("#"+optionId).get(0).checked;
+			if (valuesToSave[optionId]) {
+				services.push(optionId.substr(8));
+			}
 		}
 		else {
 			valuesToSave[optionId] = $("#"+optionId).val();
 		}
 	}
+	
+	servicesUsed.save({
+		list: services
+	});
 	
 	chrome.storage.sync.set(valuesToSave, function() {
 		$("#saved-alert").show();

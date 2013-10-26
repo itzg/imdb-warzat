@@ -15,7 +15,7 @@ function TvListingsQuery(rows, savedValues) {
 	ProgressTooltip.addSearcher(this.searcher);
 
 	
-	console.log("Starting with", this);
+	console.debug("Starting with", this);
 	
 	var us = this;
 	
@@ -45,17 +45,17 @@ function TvListingsQuery(rows, savedValues) {
 	});
 	
 	function dataReady() {
-		console.log("At dataReady", us);
+		console.debug("At dataReady", us);
 		
 		us.searcher.readyForNext(nextRow);
 	}
 	
 	function nextRow(rowDetails) {
-		console.log("Starting nextRow", rowDetails);
+		console.debug("Starting nextRow", rowDetails);
 		if (rowDetails.type == "Feature") {
 			var showing = this.showings[rowDetails.title];
 			if (showing) {
-				console.log("Adding badge");
+				console.debug("Adding badge");
 				this.searcher.addFreeformBadge(rowDetails, "<div>"+showing.channelName+"("+showing.channelNumber+")</div>");
 			}
 		}

@@ -12,3 +12,10 @@ var optionValues = {
 	"tv-sources": null,
 	"tv-provider": null
 };
+
+// Setup and declare Parse
+
+Parse.initialize(parseAccessor.appID, parseAccessor.jsKey);
+
+var Action = Parse.Object.extend("Action");
+var ServicesUsed = Parse.Object.extend("ServicesUsed");

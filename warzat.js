@@ -43,6 +43,10 @@ ProgressTooltip.addSearcher = function(searcher) {
 };
 
 ProgressTooltip.stopAll = function() {
+	var action = new Action();
+	action.set("what", "requested-stop");
+	action.save();
+
 	for (var i = 0; i < ProgressTooltip.searchers.length; ++i) {
 		ProgressTooltip.searchers[i].stop();
 	}
@@ -386,7 +390,7 @@ function Redbox(rows, options) {
 				});
 			}
 			else {
-				console.log("Didn't find expected format", moviesResult, rowDetails);
+				console.debug("Didn't find expected format", moviesResult, rowDetails);
 			}
 		}
 		
@@ -495,6 +499,10 @@ var compactList = $("div.list.compact");
 var maxRows = optionValues["search-limit"];
 
 if (compactList.length > 0) {
+	var action = new Action();
+	action.set("what", "used-compactList");
+	action.save();
+
 	// Make room for our column
 	$("th.num_votes").remove();
 	$("td.num_votes").remove();
@@ -506,6 +514,7 @@ if (compactList.length > 0) {
 	$("td.title", compactList).after("<td class='availableAt' style='text-align: left'></td>");
 	
 	chrome.storage.sync.get(optionValues, function(savedValues) {
+		
 		if (savedValues["search-limit"]) {
 			maxRows = savedValues["search-limit"];
 		}
@@ -521,4 +530,9 @@ if (compactList.length > 0) {
 		savedValues["service-tv"] && new TvListingsQuery(rows, savedValues);
 	});
 	
+}
+else {
+	var action = new Action();
+	action.set("what", "used-other-viewType");
+	action.save();
 }
