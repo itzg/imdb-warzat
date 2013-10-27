@@ -68,7 +68,10 @@ ProgressTooltip.update = function() {
 	if (maxRemaining > 0) {
 		if (ProgressTooltip.jqObj == null) {
 			ProgressTooltip.jqObj = $("<div id='warzatProgressPopup'>" +
-				"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
+					"<div style='margin-bottom:5px'>"+
+					"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
+					"</div>"+
+					"<div style='font-size: smaller; text-align:center;'><a target='_blank' href='"+chrome.extension.getURL('options.html')+"'>Options...</a></div>"+
 				"</div>").appendTo("body");
 			ProgressTooltip.jqObj.position({
 				my: "left bottom",
