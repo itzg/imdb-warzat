@@ -96,7 +96,7 @@ ProgressTooltip.update = function() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function Searcher(context, rows, accessor, minRowPeriod, badgeImage) {
+function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId) {
 	this.context = context;
 	// Need a copy of the given array so each searcher works off its own list
 	this.rows = rows.slice(0);
@@ -105,6 +105,7 @@ function Searcher(context, rows, accessor, minRowPeriod, badgeImage) {
 	this.needsToStop = false;
 	this.badgeImage = badgeImage;
 	this.lastInvocation = Date.now();
+	this.clickThruId = clickThruId;
 }
 
 Searcher.prototype = {
@@ -163,10 +164,16 @@ Searcher.prototype = {
 	addBadge: function(rowDetails, webPageHref) {
 		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
 //		console.log("Adding badge", this.badgeImage, webPageHref);
-		$(rowDetails.row).find("td.availableAt")
-		.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
+		var cell = $(rowDetails.row).find("td.availableAt")
+		cell.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
 				imgUrl + "'></img></a></div>");
-
+		
+		var that = this
+		cell.find("a").click(function() {
+			var action = new Action();
+			action.set("what", "clicked-"+that.clickThruId);
+			action.save();
+		});
 	},
 	
 	addFreeformBadge: function(rowDetails, content) {
@@ -272,7 +279,7 @@ function Netflix(rows) {
 	
 	this.searcher = new Searcher(this, rows, netflixAccessor, 
 			250, // Netflix allows 10 calls per sec and it takes 2 per row
-			"Netflix.png");
+			"Netflix.png", "netflix");
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
 	this.invoker = new AvailableAt.Invoker(netflixAccessor);
@@ -290,7 +297,7 @@ function Redbox(rows, options) {
 	var rowsToSearch = rows.slice(0, Math.min(maxRows, rows.length));
 	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
 			250,
-			"Redbox.png"
+			"Redbox.png", "redbox"
 			);
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
@@ -484,7 +491,8 @@ function Hulu(rows) {
 	
 	this.searcher = new Searcher(this, rows, null, 
 			250,
-			"Hulu.png"
+			"Hulu.png",
+			"hulu"
 			);
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRowCallback);

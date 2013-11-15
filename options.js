@@ -107,7 +107,11 @@ function setupTvListings(savedValues) {
 	// Register events
 	
 	$("#service-tv").change(function(evt){
-		$("#tv-settings").toggle(isTvListingsEnabled());
+		var on = isTvListingsEnabled();
+		$("#tv-settings").toggle(on);
+		if (on) {
+			handleZipCodeChange();
+		}
 	});
 	
 	$("#zip-code").change(handleZipCodeChange);
