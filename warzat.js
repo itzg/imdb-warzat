@@ -506,7 +506,7 @@ function isServiceEnabled(serviceId) {
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
-var compactList = $("div.list.compact");
+var compactList = $("div.list_titles div.list.compact");
 var maxRows = optionValues["search-limit"];
 
 if (compactList.length > 0) {
