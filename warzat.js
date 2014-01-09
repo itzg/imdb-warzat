@@ -531,6 +531,8 @@ if (compactList.length > 0) {
 		}
 		
 		var rows = $.makeArray($("tr.list_item"));
+		// Remove header row.
+		rows.shift();
 		if (rows.length > maxRows) {
 			rows.splice(maxRows);
 		}
