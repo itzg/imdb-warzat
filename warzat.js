@@ -71,8 +71,15 @@ ProgressTooltip.update = function() {
 					"<div style='margin-bottom:5px'>"+
 					"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
 					"</div>"+
-					"<div style='font-size: smaller; text-align:center;'><a target='_blank' href='"+chrome.extension.getURL('options.html')+"'>Options...</a></div>"+
+					"<div style='font-size: smaller; text-align:center;'><a id='warzatOptionsLink' href='#'>Options...</a></div>"+
 				"</div>").appendTo("body");
+			
+			// Setup options page link
+			$("#warzatOptionsLink", ProgressTooltip.jqObj).click(function(evt) {
+				evt.preventDefault();
+				chrome.runtime.sendMessage({action:'show', target:'options'});
+			});
+			
 			ProgressTooltip.jqObj.position({
 				my: "left bottom",
 				at: "left top-15",
