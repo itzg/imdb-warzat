@@ -4,6 +4,10 @@ var TvListings = {
 	}
 };
 
+/*
+ * TV Listings are a whole different beast since we get a one-shot request to evaluate the list of movies.
+ * From there, it iterates through to match the typical Warzat behavior.
+ */
 function TvListingsQuery(rows, savedValues) {
 	this.serviceId = savedValues["tv-provider"];
 	this.sourceIds = $.map(savedValues["tv-sources"].split(","), function(val) {

@@ -1,6 +1,206 @@
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+/*///////////////////////////////////////////////////////////////////////////////
+
+It is recommended that vendor specific searchers actually delegate via an
+instance of Searcher. Typically this is done by constructing and saving to the 'searcher' field:
+
+function MySearcher(rows) {
+
+	// ... More AJAX handlers probably end up here
+
+	// Example of a typical error callback to provide to AJAX calls
+	function errorCallback(jqXHR, textStatus, errorThrown) {
+		console.error("Query failed", this, textStatus, errorThrown);
+		// just keep swimming
+		this.me.searcher.readyForNext(nextRow);
+	}
+	
+	// Example of your readyForNext handler
+	function nextRow(rowDetails) {
+		// Save off our reference since you'll want to pass rowDetails into the AJAX call's context
+		rowDetails.me = this;
+		
+		// Do some kind of AJAX'y call propagating to yet another handler
+		// DON'T FORGET to add the vendor's API base URL to the permissions in the manifest.json.
+		
+		// on error...must keep things progressing
+		this.searcher.readyForNext(nextRow);
+	}
+
+	// Examples values
+	var minRowPeriod = 250;
+	var badgeImage = "vendor.png";
+	var clickThruId = "vendor";
+	
+	this.searcher = new Searcher(this, rows, accessor, minRowPeriod, badgeImage, clickThruId);
+	ProgressTooltip.addSearcher(this.searcher);
+	this.searcher.readyForNext(nextRow);
+}
+	
+Notice you MUST register the Searcher with the progress tracker.
+
+
+The Searcher constructor consists of
+ 	context: 		becomes the 'this' of handler given to readyForNext, so typically
+ 					you'll want to pass the instance of your specific searcher object
+ 	rows:			the common list of rows provided to each searcher 
+ 	accessor:		a vendor API specific accessor object, can be null
+ 	minRowPeriod:	some APIs impose request-rate limits, so this specifies the minimum
+ 	 				amount of time (in milliseconds) between each request. If a request
+ 	 				takes longer than this, then there is no additional delay
+	badgeImage:		the name of the image file under 'images' to apply as the badge 
+	clickThruId:	the ID (that should ideally match the options-commons.js identifier) 
+					that is used when saving click-thru metrics
+
+To kick off the processing, the "searcher instance"
+constructor should invoke 
+
+	readyForNext(handler(rowDetails))
+
+where the this-context of the handler is 'context' passed in the Searcher constructor
+and the rowDetails object passed to the handler consists of:
+	row: 			the row element itself
+	title: 			the movie/show title
+	type: 			type of media as reported by IMDB in the "Type" column,
+	       			such as "Feature", "TV Series", "Documentary"
+	simpleType:		normalized media type that is either "movie" or "tv"
+	releaseYear: 	the four digit release year of the movie/show instance
+
+NOTE: it is the searcher's responsibility to keep the loop going by re-invoking
+readyForNext, success or failure.
+
+ 
+The searcher's handler pipeline can indicate availability and provide the vendor site URL by
+invoking
+
+	addBadge(rowDetails, webPageHref)
+	
+where
+	rowDetails:		the rowDetails object provided to the readyForNext handler
+	webPageHref		the URL of the web page to reference
+
+
+*/
+
+function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId) {
+	this.context = context;
+	// Need a copy of the given array so each searcher works off its own list
+	this.rows = rows.slice(0);
+	this.accessor = accessor;
+	this.minRowPeriod = minRowPeriod;
+	this.needsToStop = false;
+	this.badgeImage = badgeImage;
+	this.lastInvocation = Date.now();
+	this.clickThruId = clickThruId;
+}
+
+Searcher.normalizeType = function(imdbType) {
+	if (imdbType == "Feature" || imdbType == "Documentary") {
+		return "movie";
+	}
+	else if (imdbType == "TV Series") {
+		return "tv";
+	}
+	else {
+		return null;
+	}
+};
+
+Searcher.prototype = {
+
+	readyForNext: function(handler) {
+		ProgressTooltip.update();
+
+		// see if stop flagged is raised
+		if (this.needsToStop) {
+			// just return to the effectively terminate the loop
+			return;
+		}
+		
+		var oThis = this;
+		
+		// Compute the actual timeout needed taking into account the
+		// time it took for the previous AJAX operations to execute.
+		var nextInvocation = this.lastInvocation + this.minRowPeriod;
+		var now = Date.now();
+		var timeToWait = nextInvocation - now;
+		this.lastInvocation = now;
+		
+		setTimeout(function() {
+			if (oThis.needsToStop) {
+				ProgressTooltip.update();
+				return;
+			}
+			
+			var type="";
+			var row;
+			
+			while (type != "Feature" && type != "Documentary" && type != "TV Series") {
+				row = oThis.rows.shift();
+				
+				if (row == undefined) {
+					ProgressTooltip.update();
+					return;
+				}
+				type = $("td.title_type", row).text().trim();
+			}
+			
+			var title = $("td.title > a", row).text();
+			
+			var rowDetails = {
+				row: row,
+				title: title,
+				type: type,
+				simpleType: Searcher.normalizeType(type),
+				releaseYear: $("td.year", row).text()
+			}
+
+			handler.call(oThis.context, rowDetails);
+		}
+		// Last call may have been slow, so we'll cap the minimum timeout at 10ms
+		, Math.max(10, timeToWait));
+	},
+	
+	addBadge: function(rowDetails, webPageHref) {
+		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
+//		console.log("Adding badge", this.badgeImage, webPageHref);
+		var cell = $(rowDetails.row).find("td.availableAt")
+		cell.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
+				imgUrl + "'></img></a></div>");
+		
+		var that = this
+		cell.find("a").click(function() {
+			var action = new Action();
+			action.set("what", "clicked-"+that.clickThruId);
+			action.save();
+		});
+	},
+	
+	addFreeformBadge: function(rowDetails, content) {
+		$(rowDetails.row).find("td.availableAt")
+		.append(content);
+	},
+	
+	stop: function() {
+		// raise the stop flag to squash the next readyForNext
+		this.needsToStop = true;
+	},
+	
+	isStopped: function() {
+		return this.needsToStop || this.rows.length == 0;
+	},
+	
+	getRemainingCount: function() {
+		return this.rows.length;
+	}
+}
+
+/*//////////////////////////////////////////////////////////////////////////////
+
+AvailableAt instances basically encapsulate OAuth AJAX invocations. For now,
+take a look at the existing uses to see how to use this :).
+
+*/
 
 var AvailableAt = {};
 
@@ -30,7 +230,15 @@ AvailableAt.Invoker.prototype = {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
+
+
+/*//////////////////////////////////////////////////////////////////////////////
+
+ProgressTooltip is used internally to display and track the search progress
+to the user across all of the vendor APIs. It also exposes the options to
+stop the searches and open options.
+
+*/
 
 var ProgressTooltip = {
 	searchers: [],
@@ -101,410 +309,6 @@ ProgressTooltip.update = function() {
 	}
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId) {
-	this.context = context;
-	// Need a copy of the given array so each searcher works off its own list
-	this.rows = rows.slice(0);
-	this.accessor = accessor;
-	this.minRowPeriod = minRowPeriod;
-	this.needsToStop = false;
-	this.badgeImage = badgeImage;
-	this.lastInvocation = Date.now();
-	this.clickThruId = clickThruId;
-}
-
-Searcher.prototype = {
-	readyForNext: function(handler) {
-		ProgressTooltip.update();
-
-		// see if stop flagged is raised
-		if (this.needsToStop) {
-			// just return to the effectively terminate the loop
-			return;
-		}
-		
-		var oThis = this;
-		
-		// Compute the actual timeout needed taking into account the
-		// time it took for the previous AJAX operations to execute.
-		var nextInvocation = this.lastInvocation + this.minRowPeriod;
-		var now = Date.now();
-		var timeToWait = nextInvocation - now;
-		this.lastInvocation = now;
-		
-		setTimeout(function() {
-			if (oThis.needsToStop) {
-				ProgressTooltip.update();
-				return;
-			}
-			
-			var type="";
-			var row;
-			
-			while (type != "Feature" && type != "Documentary" && type != "TV Series") {
-				row = oThis.rows.shift();
-				
-				if (row == undefined) {
-					ProgressTooltip.update();
-					return;
-				}
-				type = $("td.title_type", row).text().trim();
-			}
-			
-			var title = $("td.title > a", row).text();
-			
-			var rowDetails = {
-				row: row,
-				title: title,
-				type: type,
-				releaseYear: $("td.year", row).text()
-			}
-
-			handler.call(oThis.context, rowDetails);
-		}
-		// Last call may have been slow, so we'll cap the minimum timeout at 10ms
-		, Math.max(10, timeToWait));
-	},
-	
-	addBadge: function(rowDetails, webPageHref) {
-		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
-//		console.log("Adding badge", this.badgeImage, webPageHref);
-		var cell = $(rowDetails.row).find("td.availableAt")
-		cell.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
-				imgUrl + "'></img></a></div>");
-		
-		var that = this
-		cell.find("a").click(function() {
-			var action = new Action();
-			action.set("what", "clicked-"+that.clickThruId);
-			action.save();
-		});
-	},
-	
-	addFreeformBadge: function(rowDetails, content) {
-		$(rowDetails.row).find("td.availableAt")
-		.append(content);
-	},
-	
-	stop: function() {
-		// raise the stop flag to squash the next readyForNext
-		this.needsToStop = true;
-	},
-	
-	isStopped: function() {
-		return this.needsToStop || this.rows.length == 0;
-	},
-	
-	getRemainingCount: function() {
-		return this.rows.length;
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-function Netflix(rows) {
-	function formatCallback(formatDataXml) {
-		var rowDetails = this;
-//		console.info(formatData);
-		
-		var instantWatchInfo = $(formatDataXml).find("availability:has(category[term='instant'])");
-		
-		var nowSec = Date.now() / 1000;
-
-		var instantWatchCount = instantWatchInfo.length;
-		var availableFrom = instantWatchInfo.attr("available_from");
-		var availableUntil = instantWatchInfo.attr("available_until");
-		
-//		console.log(rowDetails, instantWatchCount, nowSec, availableFrom, availableUntil);
-		
-		if (instantWatchCount > 0
-				&& nowSec > availableFrom
-				&& nowSec < availableUntil) {
-			var webPageHref = $(rowDetails.titleXml).find("link[rel='alternate']").attr("href");
-			
-			rowDetails.me.searcher.addBadge(rowDetails, webPageHref);
-		}
-		
-		rowDetails.me.searcher.readyForNext(nextRow);
-	}
-	
-	function titlesCallback(dataXml) {
-    	var rowDetails = this;
-    	
-//    	console.info(rowDetails.title, data);
-    	var title = null;
-    	$(dataXml).find("catalog_title").each(function(candidate) {
-    		var candidateTitle = $("title", this).attr("short");
-    		var candidateYear = $("release_year", this).text();
-    		if (candidateTitle == rowDetails.title && candidateYear == rowDetails.releaseYear) {
-    			title = $(this);
-    			return false;
-    		}
-    	});
-    	
-    	if (title == null) {
-//    		console.log("No matching years for "+rowDetails.title);
-    		rowDetails.me.searcher.readyForNext(nextRow);
-    		return;
-    	}
-    	
-    	var link = title.find("link[rel='http://schemas.netflix.com/catalog/titles/format_availability']");
-    	var href = link.attr("href");
-//    	console.info(title, link.length, link, href);
-    	
-    	rowDetails.titleXml = title;
-    	
-		if (href === undefined) {
-    		rowDetails.me.searcher.readyForNext(nextRow);
-			return;
-		}
-		
-		rowDetails.me.invoker.invoke(href, [], rowDetails, "xml", formatCallback, errorCallback);
-	}
-	
-	function errorCallback(jqXHR, textStatus, errorThrown) {
-		console.error("Netflix query failed", this, textStatus, errorThrown);
-		this.me.searcher.readyForNext(nextRow);
-	}
-	
-	function nextRow(rowDetails) {
-		rowDetails.me = this;
-		
-		var parameters = [];
-	    parameters.push(["term", rowDetails.title]);
-	    parameters.push(["start_index", "0"]);
-	    // Since Netflix doesn't provide an exact match query, we'll get a few
-	    // back and then find the exact title and release year match. At least
-	    // it gives these back in best match order.
-	    parameters.push(["max_results", "10"]);
-	    
-	    this.invoker.invoke("http://api-public.netflix.com/catalog/titles", parameters, rowDetails, "xml", 
-	    		titlesCallback, errorCallback);
-	}
-	
-	this.searcher = new Searcher(this, rows, netflixAccessor, 
-			250, // Netflix allows 10 calls per sec and it takes 2 per row
-			"Netflix.png", "netflix");
-	ProgressTooltip.addSearcher(this.searcher);
-	this.searcher.readyForNext(nextRow);
-	this.invoker = new AvailableAt.Invoker(netflixAccessor);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-function Redbox(rows, options) {
-	// Set options
-	this["zip-code"] = 0;
-	this["search-radius"] = 0;
-	$.extend(this, options);
-
-	// Redbox is crazy slow, so we'll trim the search list aggressively
-	var rowsToSearch = rows.slice(0, Math.min(maxRows, rows.length));
-	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
-			250,
-			"Redbox.png", "redbox"
-			);
-	ProgressTooltip.addSearcher(this.searcher);
-	this.searcher.readyForNext(nextRow);
-	
-	//// Private Methods ////
-	
-	function addBadge(rowDetails, websiteUrl) {
-		rowDetails.me.searcher.addBadge(rowDetails, websiteUrl);
-	}
-	
-	function queryByZipcodeCallback(data) {
-		var rowDetails = this;
-		
-		var storeInventory = data.Inventory.StoreInventory;
-		if (storeInventory != undefined) {
-			for (var si = 0; si < storeInventory.length; ++si) {
-				if (storeInventory[si].ProductInventory["@inventoryStatus"] == "InStock") {
-					addBadge(rowDetails, rowDetails.websiteUrl);
-					break;
-				}
-			}
-		}
-	}
-	
-	// NOTE: this will be processed concurrently with next row's request
-	function processAvailableAt(rowDetails, productId, websiteUrl) {
-		if (rowDetails.me["zip-code"] > 0) {
-			rowDetails.websiteUrl = websiteUrl;
-			$.ajax("https://api.redbox.com/v3/inventory/stores/postalcode/"+rowDetails.me["zip-code"], {
-				data: {
-					apiKey: rowDetails.me.searcher.accessor.apiKey,
-					products: productId,
-					radius: rowDetails.me["search-radius"]
-				},
-				context: rowDetails,
-				success: queryByZipcodeCallback,
-				error: errorCallback,
-				headers: {"Accept":"application/json"},
-				dataType: "json"
-			});
-
-		}
-		else {
-			addBadge(rowDetails, websiteUrl);
-		}
-		
-	}
-
-	function queryCallback(data) {
-		var rowDetails = this;
-		
-		var moviesResult = data.Products.Movie;
-		
-		if (moviesResult != undefined) {
-			// Normalize the variable to be an array. If only one is returned, then
-			// Redbox gives us a single field.
-			if (!$.isArray(moviesResult)) {
-				moviesResult = [ moviesResult ];
-			}
-			var dvdPos = -1;
-			var blurayPos = -1;
-			
-			// Scans formats provided
-			for (var i = 0; i < moviesResult.length; ++i) {
-				
-				// Need to look for exact match of title and release year. We'll get
-				// substring matches back from Redbox and could get prior releases
-				// with same title.
-				if ((moviesResult[i]["Title"] == rowDetails.title 
-							|| moviesResult[i]["Title"] == rowDetails.title+" ("+rowDetails.releaseYear+")")
-						&& moviesResult[i]["ReleaseYear"] == rowDetails.releaseYear) {
-					var format = moviesResult[i]["@format"];
-					if (format == "DVD") {
-						dvdPos = i;
-					}
-					else if (format == "Blu-ray") {
-						blurayPos = i;
-					}
-				}
-			}
-			
-			// ...we'll prefer DVD
-			var moviesResultPos = dvdPos != -1 ? dvdPos : blurayPos;
-			if (moviesResultPos != -1) {
-				var flags = moviesResult[moviesResultPos].Flags.Flag;
-
-				flags.forEach(function(flag) {
-					if (flag["@type"] == "AvailableAtRedbox") {
-						var now = Date.now();
-						var beginDate = flag["@beginDate"];
-						var endDate = flag["@endDate"];
-						if (beginDate != undefined && Date.parse(beginDate) < now) {
-							if (endDate == undefined || Date.parse(endDate) > now) {
-								processAvailableAt(rowDetails, 
-										moviesResult[moviesResultPos]["@productId"],
-										moviesResult[moviesResultPos]["@websiteUrl"]);
-							}
-						}
-					}
-				});
-			}
-			else {
-				console.debug("Didn't find expected format", moviesResult, rowDetails);
-			}
-		}
-		
-		rowDetails.me.searcher.readyForNext(nextRow);
-	}
-	
-	function errorCallback(jqXHR, textStatus, errorThrown) {
-		console.error("Redbox query failed", this, textStatus, errorThrown);
-		this.me.searcher.readyForNext(nextRow);
-	}
-	
-	function nextRow(rowDetails) {
-		rowDetails.me = this;
-		
-		$.ajax("https://api.redbox.com/v3/products", {
-			data: {
-				apiKey: this.searcher.accessor.apiKey,
-				q: rowDetails.title,
-				productTypes: "Movies"
-			},
-			context: rowDetails,
-			success: queryCallback,
-			error: errorCallback,
-			headers: {"Accept":"application/json"},
-			dataType: "json"
-		});
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-function Hulu(rows) {
-	function queryCallback(xmlData) {
-		var rowDetails = this;
-		
-		var videoXml = null;
-		// Need to find the one with an exact match
-		$(xmlData).find("results > videos > video").each(function() {
-			if ($(this).find("show > name").text() == rowDetails.title) {
-				videoXml = $(this);
-				return false; // break out of each-loop
-			}
-		})
-		
-		if (videoXml != null) {
-			var huluPlusIndicator = videoXml.find("show > has-plus-living-room");
-			if (huluPlusIndicator.length > 0 && huluPlusIndicator.text() == "true") {
-				var urlName = videoXml.find("show > canonical-name");
-				var url = "#";
-				if (urlName.length > 0) {
-					url = "http://www.hulu.com/" + urlName.text();
-				}
-				rowDetails.me.searcher.addBadge(rowDetails, url);
-			}
-		}
-		
-		rowDetails.me.searcher.readyForNext(nextRowCallback);
-	}
-	
-	function errorCallback(jqXHR, textStatus, errorThrown) {
-		console.error("Hulu query failed", this, textStatus, errorThrown);
-		this.me.searcher.readyForNext(nextRowCallback);
-	}
-	
-	function nextRowCallback(rowDetails) {
-		if (rowDetails.type != "TV Series") {
-			this.searcher.readyForNext(nextRowCallback);
-			return;
-		}
-		
-		rowDetails.me = this;
-		
-		$.ajax("http://m.hulu.com/search", {
-			data: {
-				"dp_identifier": "Hulu",
-			    "query": rowDetails.title,
-			    "items_per_page": this.itemsPerPage,
-			    "page": "1"
-			},
-			context: rowDetails,
-			success: queryCallback,
-			error: errorCallback,
-			dataType: "xml"
-		});
-	}
-	
-	this.itemsPerPage = 10;
-	
-	this.searcher = new Searcher(this, rows, null, 
-			250,
-			"Hulu.png",
-			"hulu"
-			);
-	ProgressTooltip.addSearcher(this.searcher);
-	this.searcher.readyForNext(nextRowCallback);
-}
-
 function isServiceEnabled(serviceId) {
 	var enabled = localStorage["warzat-"+serviceId];
 	return enabled === undefined || enabled == "true";
@@ -548,6 +352,7 @@ if (compactList.length > 0) {
 		savedValues["service-redbox"] && new Redbox(rows, savedValues);
 		savedValues["service-hulu"] && new Hulu(rows);
 		savedValues["service-tv"] && new TvListingsQuery(rows, savedValues);
+		savedValues["service-itunes"] && new iTunes(rows);
 	});
 	
 }

@@ -1,7 +1,7 @@
 {
   "name": "IMDb Watchlist Warzat",
   "short_name": "Warzat",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "manifest_version": 2,
   "description": "Decorates your IMDb watchlist with an indicator and a link when a movie is available for Netflix or Redbox streaming.",
   "options_page": "options.html",
@@ -11,12 +11,13 @@
       "matches": ["http://www.imdb.com/*/watchlist*", "http://www.imdb.com/list/*"],
       "run_at": "document_end",
       "css": ["warzat.css","ui-lightness/jquery-ui-1.9.2.custom.min.css"],
-      "js": ["lib/jquery-1.8.3.min.js","lib/jquery-ui-1.9.2.custom.min.js",
+      "js": ["lib/jquery-1.11.0.min.js","lib/jquery-ui-1.9.2.custom.min.js",
 	      "lib/sha1.js","lib/oauth.js", "lib/md5.js",
 	      "lib/parse-1.2.12.min.js",
 	      "rovi-accessor.js", "netflix-accessor.js","redbox-accessor.js", "parse-accessor.js",
 	      "options-common.js", 
 	      "tv-listings.js", 
+	      "hulu-searcher.js","redbox-searcher.js","netflix-searcher.js","itunes-searcher.js",
 	      "warzat.js"]
     }
   ],
@@ -32,6 +33,7 @@
       "http://m.hulu.com/",
       "http://api.rovicorp.com/",
       "http://api.parse.com/",
+      "https://itunes.apple.com/",
       
       "storage"
   ],
@@ -39,7 +41,8 @@
   "web_accessible_resources": [
     "images/Netflix.png",
     "images/Redbox.png",
-    "images/Hulu.png"
+    "images/Hulu.png",
+    "images/iTunes.png"
   ],
   
   "icons": { "16": "icon16.png",

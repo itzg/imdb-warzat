@@ -6,6 +6,9 @@ var optionValues = {
 	"service-redbox" : true,
 	"service-hulu" : true,
 	"service-tv" : false,
+	// iTunes off by default since EVERYTHING seems to be available, so the
+	// default got noisy
+	"service-itunes" : false,
 	"zip-code" : null,
 	"search-radius" : 10,
 	"search-limit": 200,
