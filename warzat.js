@@ -279,7 +279,7 @@ ProgressTooltip.update = function() {
 					"<div style='margin-bottom:5px'>"+
 					"<span id='warzatProgressCount'>.</span> left to lookup. <a href='#' id='btnStopWarzat'>Stop</a>" +
 					"</div>"+
-					"<div style='font-size: smaller; text-align:center;'><a id='warzatOptionsLink' href='#'>Options...</a></div>"+
+					"<div class='popupFooter'><a id='warzatOptionsLink' href='#'>Options...</a></div>"+
 				"</div>").appendTo("body");
 			
 			// Setup options page link
@@ -312,6 +312,53 @@ ProgressTooltip.update = function() {
 function isServiceEnabled(serviceId) {
 	var enabled = localStorage["warzat-"+serviceId];
 	return enabled === undefined || enabled == "true";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+var ClickHereHint = {
+    STORAGE_KEY: "dismissedClickHereDlg",
+
+    checkForNewUser: function() {
+        chrome.storage.sync.get(ClickHereHint.STORAGE_KEY, function(items) {
+            if (!items[ClickHereHint.STORAGE_KEY]) {
+                ClickHereHint.show();
+            }
+        });
+
+        // FOR TEST ONLY
+        chrome.storage.sync.remove(ClickHereHint.STORAGE_KEY);
+    },
+
+    show: function() {
+        var hintPopup = $("<div class='hintPopup'>" +
+                            "<img id='clickHereArrow' src='"+chrome.extension.getURL("images/click-here.png")+"'/>" +
+                            "<div>Click here to see Warzat</div>"+
+                            "<div class='popupFooter'><a class='closeLink' href='#'>Got it, thanks</a></div>"+
+                          "</div>").appendTo("body");
+        hintPopup.position({
+            my: "center top+15",
+            at: "center bottom",
+            of: "a.compact"
+        });
+        hintPopup.show("fade");
+
+        $("a.compact").hover(function() {
+            hintPopup.hide();
+        })
+
+        $("a.closeLink", hintPopup).click(function(evt) {
+            evt.preventDefault();
+            hintPopup.hide();
+            ClickHereHint.dismissForever();
+        });
+    },
+
+    dismissForever: function() {
+        var items = {};
+        items[ClickHereHint.STORAGE_KEY] = true;
+        chrome.storage.sync.set(items);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -360,4 +407,6 @@ else {
 	var action = new Action();
 	action.set("what", "used-other-viewType");
 	action.save();
+
+    ClickHereHint.checkForNewUser();
 }
