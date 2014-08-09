@@ -151,7 +151,7 @@ Searcher.prototype = {
 				type: info.type,
 				simpleType: Searcher.normalizeType(info.type),
 				releaseYear: info.year
-			}
+			};
 
 			handler.call(oThis.context, rowDetails);
 		}
@@ -193,7 +193,7 @@ Searcher.prototype = {
 	getRemainingCount: function() {
 		return this.rows.length;
 	}
-}
+};
 
 /*//////////////////////////////////////////////////////////////////////////////
 
@@ -206,7 +206,7 @@ var AvailableAt = {};
 
 AvailableAt.Invoker = function(accessor) {
 	$.extend(this, accessor);
-}
+};
 
 AvailableAt.Invoker.prototype = {
 	invoke: function(url, parameters, context, dataType, handler, errorHandler) {
@@ -228,7 +228,7 @@ AvailableAt.Invoker.prototype = {
 			dataType: dataType
 		});
 	}
-}
+};
 
 
 
@@ -301,18 +301,15 @@ ProgressTooltip.update = function() {
 				ProgressTooltip.stopAll();
 			});
 		}
+        else {
+            ProgressTooltip.jqObj.show("fade");
+        }
 		$("#warzatProgressCount").text(maxRemaining);
 	}
 	else if (ProgressTooltip.jqObj != null) {
 		ProgressTooltip.jqObj.hide("puff");
-		ProgressTooltip.jqObj = null;
 	}
 };
-
-function isServiceEnabled(serviceId) {
-	var enabled = localStorage["warzat-"+serviceId];
-	return enabled === undefined || enabled == "true";
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -350,7 +347,7 @@ var ClickHereHint = (function() {
 
         clicker.hover(function () {
             hintPopup.hide();
-        })
+        });
 
         $("a.closeLink", hintPopup).click(function (evt) {
             evt.preventDefault();
@@ -367,15 +364,88 @@ var ClickHereHint = (function() {
                         try {
                             show();
                         } catch (e) {
-                            console.log("Trying to show click-here hint", e);
+                            console.warn("Trying to show click-here hint", e);
                         }
                     }
                 });
             } catch (e) {
-                console.log("While accessing chrome storage", e);
+                console.warn("While accessing chrome storage", e);
             }
         }
     }
+})();
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+IMPLEMENTATION NOTE:
+Since we can't hook into a "done loading" type event, we have to resort
+to polling the lists for new items. Luckily we can run around and "tag"
+things we have already seen with our own "wz" class. That'll be used
+to filter away the element selections in the code below.
+ */
+var WarzatListWatcher = (function() {
+    var quietTime = 5000,
+        timePerWatch = 500;
+
+    var listerContainer = $(".lister.list");
+    var listerList = $(".lister-list", listerContainer);
+    var modeSimpleColumnHeaders = $(".mode-simple.column-headers");
+    var watchTimeoutId = undefined;
+    var lastActivity = 0;
+
+    function handleWatchTimeout() {
+        Warzat.trimExtraColumns();
+        watchPagingControls();
+
+        var unprocessed = $(".lister-item.mode-simple", listerList).not(".wz");
+        if (unprocessed.length > 0) {
+            // tag em so we don't pick them up next time
+            unprocessed.addClass("wz");
+
+            lastActivity = Date.now();
+            Warzat.lookup(Warzat.applyRowLimit(unprocessed));
+            watchTimeoutId = setTimeout(handleWatchTimeout, timePerWatch);
+        }
+        else if ((Date.now() - lastActivity) > quietTime) {
+            watchTimeoutId = undefined;
+        }
+        else {
+            watchTimeoutId = setTimeout(handleWatchTimeout, timePerWatch);
+        }
+    }
+
+    function watchPagingControls() {
+        var pagingControls = $("a.lister-page-prev")
+            .add("a.lister-page-next")
+            .add("span.lister-mode.simple")
+            .not(".wz");
+
+        pagingControls.click(function () {
+            if (watchTimeoutId == undefined) {
+                lastActivity = Date.now();
+                console.debug("Starting activity timer");
+                watchTimeoutId = setTimeout(handleWatchTimeout, timePerWatch);
+            }
+        });
+
+        pagingControls.addClass("wz");
+    }
+
+    return {
+        getColumnHeaders: function() {
+            return modeSimpleColumnHeaders;
+        },
+
+        isSimpleMode: function() {
+            return !modeSimpleColumnHeaders.hasClass("hidden");
+        },
+
+        start: function () {
+            handleWatchTimeout();
+            watchPagingControls();
+        }
+    };
 })();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -388,6 +458,8 @@ var Warzat = (function() {
         compactList = $("div.lister.detail");
         newMode = compactList.length > 0;
     }
+    
+    var savedOptions;
 
     function setupNewHeader() {
         var titleHeader = $(".column-headers .col-title", compactList);
@@ -397,12 +469,6 @@ var Warzat = (function() {
             return oldText + " & Warzat?";
         });
 
-        var userRatingSel = $(".col-user-rating", compactList);
-        userRatingSel.remove();
-
-        $(".col-title", compactList).width(function (i, oldWidth) {
-            return oldWidth + 70;
-        });
     }
 
     function setupOldHeader() {
@@ -433,11 +499,22 @@ var Warzat = (function() {
             }
         },
 
+        trimExtraColumns: function () {
+            var userRatingSel = $(".col-user-rating", compactList);
+            userRatingSel.remove();
+
+            var onesToWiden = $(".col-title", compactList).not(".wz");
+            onesToWiden.width(function (i, oldWidth) {
+                return oldWidth + 70;
+            });
+            onesToWiden.addClass("wz");
+        },
+
         extractRows: function (maxRows) {
             var rows;
 
             if (newMode) {
-                rows = $.makeArray(compactList.find(".lister-list .lister-item"));
+                rows = $.makeArray(compactList.find(".lister-list .lister-item.mode-simple"));
             }
             else {
                 rows = $.makeArray($("tr.list_item"));
@@ -450,6 +527,12 @@ var Warzat = (function() {
             }
 
             return rows;
+        },
+
+        applyRowLimit: function(rowSel) {
+            return $.makeArray(rowSel.filter(function(i) {
+                return i < maxRows;
+            }));
         },
 
         extractInfo: function(row) {
@@ -495,7 +578,7 @@ var Warzat = (function() {
                     }
                 }
                 else {
-                    console.log("yearBlob didn't look right", yearBlob, row);
+                    console.debug("yearBlob didn't look right", yearBlob, row);
                 }
             }
             else {
@@ -519,6 +602,35 @@ var Warzat = (function() {
             else {
                 return $("td.availableAt", row);
             }
+        },
+
+        start: function(savedOptionsIn) {
+            savedOptions = savedOptionsIn;
+            if (savedOptions["search-limit"] != undefined) {
+                maxRows = savedOptions["search-limit"];
+            }
+            else {
+                maxRows = 100;
+            }
+
+            if (newMode) {
+                WarzatListWatcher.start();
+            }
+            else {
+                // Slice off header row.
+                var trSel = $("tr.list_item").slice(1);
+                Warzat.lookup(Warzat.applyRowLimit(trSel));
+            }
+        },
+
+        lookup: function(rowsArray) {
+            console.debug("Starting lookup", rowsArray.length);
+            savedOptions["service-netflix"] && new Netflix(rowsArray);
+            savedOptions["service-redbox"] && new Redbox(rowsArray, savedOptions);
+            savedOptions["service-hulu"] && new Hulu(rowsArray);
+            savedOptions["service-tv"] && new TvListingsQuery(rowsArray, savedOptions);
+            //noinspection JSPotentiallyInvalidConstructorUsage
+            savedOptions["service-itunes"] && new iTunes(rowsArray);
         }
 
 };
@@ -526,31 +638,19 @@ var Warzat = (function() {
 
 var maxRows = optionValues["search-limit"];
 
+var action = new Action();
 if (Warzat.isListView()) {
-	var action = new Action();
 	action.set("what", "used-compactList");
 	action.save();
 
     Warzat.setupHeader();
 
 	chrome.storage.sync.get(optionValues, function(savedValues) {
-		
-		if (savedValues["search-limit"]) {
-			maxRows = savedValues["search-limit"];
-		}
-
-        var rows = Warzat.extractRows(maxRows);
-
-		savedValues["service-netflix"] && new Netflix(rows);
-		savedValues["service-redbox"] && new Redbox(rows, savedValues);
-		savedValues["service-hulu"] && new Hulu(rows);
-		savedValues["service-tv"] && new TvListingsQuery(rows, savedValues);
-		savedValues["service-itunes"] && new iTunes(rows);
+		Warzat.start(savedValues);
 	});
 	
 }
 else {
-	var action = new Action();
 	action.set("what", "used-other-viewType");
 	action.save();
 

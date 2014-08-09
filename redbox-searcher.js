@@ -77,8 +77,7 @@ function Redbox(rows, options) {
 				// Need to look for exact match of title and release year. We'll get
 				// substring matches back from Redbox and could get prior releases
 				// with same title.
-				if ((moviesResult[i]["Title"] == rowDetails.title 
-							|| moviesResult[i]["Title"] == rowDetails.title+" ("+rowDetails.releaseYear+")")
+				if (moviesResult[i]["Title"].search(rowDetails.title) == 0
 						&& moviesResult[i]["ReleaseYear"] == rowDetails.releaseYear) {
 					var format = moviesResult[i]["@format"];
 					if (format == "DVD") {
@@ -111,7 +110,7 @@ function Redbox(rows, options) {
 				});
 			}
 			else {
-				console.debug("Didn't find expected format", moviesResult, rowDetails);
+				console.debug("Didn't match title, release year, or find expected format", moviesResult, rowDetails);
 			}
 		}
 		
