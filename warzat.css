@@ -4,7 +4,7 @@
 	width: 80px;
 }
 
-#warzatProgressPopup {
+#warzatProgressPopup, .hintPopup {
 	border: thin solid;
 	position: absolute;
 	background-color: white;
@@ -13,4 +13,17 @@
 	border-radius: 3px;
 	font-family: Verdana, Arial, sans-serif;
 	font-size: 14px;
+	z-index: 2000;
+}
+
+#clickHereArrow {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+}
+
+.popupFooter {
+    margin-top: 5px;
+    font-size: smaller;
+    text-align:center;
 }
