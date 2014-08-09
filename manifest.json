@@ -1,7 +1,7 @@
 {
   "name": "IMDb Watchlist Warzat",
   "short_name": "Warzat",
-  "version": "1.7.2",
+  "version": "2.0.0",
   "manifest_version": 2,
   "description": "Decorates your IMDb watchlist with an indicator and a link when a movie is available for Netflix or Redbox streaming.",
   "options_page": "options.html",
@@ -13,7 +13,7 @@
       "css": ["warzat.css","ui-lightness/jquery-ui-1.9.2.custom.min.css"],
       "js": ["lib/jquery-1.11.0.min.js","lib/jquery-ui-1.9.2.custom.min.js",
 	      "lib/sha1.js","lib/oauth.js", "lib/md5.js",
-	      "lib/parse-1.2.12.min.js",
+	      "lib/parse-1.2.18.min.js",
 	      "rovi-accessor.js", "netflix-accessor.js","redbox-accessor.js", "parse-accessor.js",
 	      "options-common.js", 
 	      "tv-listings.js", 

@@ -132,27 +132,25 @@ Searcher.prototype = {
 				return;
 			}
 			
-			var type="";
 			var row;
-			
-			while (type != "Feature" && type != "Documentary" && type != "TV Series") {
+            var info = {};
+
+            while (info.type != "Feature" && info.type != "Documentary" && info.type != "TV Series") {
 				row = oThis.rows.shift();
 				
 				if (row == undefined) {
 					ProgressTooltip.update();
 					return;
 				}
-				type = $("td.title_type", row).text().trim();
+                info = Warzat.extractInfo(row);
 			}
-			
-			var title = $("td.title > a", row).text();
 			
 			var rowDetails = {
 				row: row,
-				title: title,
-				type: type,
-				simpleType: Searcher.normalizeType(type),
-				releaseYear: $("td.year", row).text()
+				title: info.title,
+				type: info.type,
+				simpleType: Searcher.normalizeType(info.type),
+				releaseYear: info.year
 			}
 
 			handler.call(oThis.context, rowDetails);
@@ -162,22 +160,24 @@ Searcher.prototype = {
 	},
 	
 	addBadge: function(rowDetails, webPageHref) {
-		var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
-//		console.log("Adding badge", this.badgeImage, webPageHref);
-		var cell = $(rowDetails.row).find("td.availableAt")
-		cell.append("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
-				imgUrl + "'></img></a></div>");
-		
-		var that = this
-		cell.find("a").click(function() {
-			var action = new Action();
-			action.set("what", "clicked-"+that.clickThruId);
-			action.save();
-		});
+        var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
+        var cell = Warzat.getAvailableAtCell(rowDetails.row);
+
+        var badge = $("<div><a target='_blank' href='" + webPageHref + "'><img title='View product page in a new window' src='" +
+            imgUrl + "'></img></a></div>")
+            .appendTo(cell);
+
+        var that = this;
+        $("a", badge).click(function() {
+            var action = new Action();
+            action.set("what", "clicked-"+that.clickThruId);
+            action.save();
+        });
+
 	},
 	
 	addFreeformBadge: function(rowDetails, content) {
-		$(rowDetails.row).find("td.availableAt")
+        Warzat.getAvailableAtCell(rowDetails.row)
 		.append(content);
 	},
 	
@@ -316,84 +316,230 @@ function isServiceEnabled(serviceId) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var ClickHereHint = {
-    STORAGE_KEY: "dismissedClickHereDlg",
+var ClickHereHint = (function() {
+    var STORAGE_KEY = "dismissedClickHereDlg";
 
-    checkForNewUser: function() {
-        chrome.storage.sync.get(ClickHereHint.STORAGE_KEY, function(items) {
-            if (!items[ClickHereHint.STORAGE_KEY]) {
-                ClickHereHint.show();
-            }
-        });
+    function dismissForever() {
+        var items = {};
+        items[STORAGE_KEY] = true;
+        chrome.storage.sync.set(items);
+    }
 
-        // FOR TEST ONLY
-        chrome.storage.sync.remove(ClickHereHint.STORAGE_KEY);
-    },
+    function show() {
+        var clicker = $("a.compact");
+        if (clicker.size() == 0) {
+            clicker = $("span.lister-mode.simple");
+        }
 
-    show: function() {
+        if (clicker.size() == 0) {
+            console.warn("Unable to locate list mode selection button");
+            return;
+        }
+
         var hintPopup = $("<div class='hintPopup'>" +
-                            "<img id='clickHereArrow' src='"+chrome.extension.getURL("images/click-here.png")+"'/>" +
-                            "<div>Click here to see Warzat</div>"+
-                            "<div class='popupFooter'><a class='closeLink' href='#'>Got it, thanks</a></div>"+
-                          "</div>").appendTo("body");
+            "<img id='clickHereArrow' src='" + chrome.extension.getURL("images/click-here.png") + "'/>" +
+            "<div>Click here to see Warzat</div>" +
+            "<div class='popupFooter'><a class='closeLink' href='#'>Got it, thanks</a></div>" +
+            "</div>").appendTo("body");
         hintPopup.position({
             my: "center top+15",
             at: "center bottom",
-            of: "a.compact"
+            of: clicker
         });
         hintPopup.show("fade");
 
-        $("a.compact").hover(function() {
+        clicker.hover(function () {
             hintPopup.hide();
         })
 
-        $("a.closeLink", hintPopup).click(function(evt) {
+        $("a.closeLink", hintPopup).click(function (evt) {
             evt.preventDefault();
             hintPopup.hide();
-            ClickHereHint.dismissForever();
+            dismissForever();
         });
-    },
-
-    dismissForever: function() {
-        var items = {};
-        items[ClickHereHint.STORAGE_KEY] = true;
-        chrome.storage.sync.set(items);
     }
-}
+
+    return {
+        checkForNewUser: function () {
+            try {
+                chrome.storage.sync.get(STORAGE_KEY, function (items) {
+                    if (!items[STORAGE_KEY]) {
+                        try {
+                            show();
+                        } catch (e) {
+                            console.log("Trying to show click-here hint", e);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.log("While accessing chrome storage", e);
+            }
+        }
+    }
+})();
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN
 
-var compactList = $("div.list_titles div.list.compact");
+var Warzat = (function() {
+    var newMode = false;
+    var compactList = $("div.list_titles div.list.compact");
+    if (compactList.length == 0) {
+        compactList = $("div.lister.detail");
+        newMode = compactList.length > 0;
+    }
+
+    function setupNewHeader() {
+        var titleHeader = $(".column-headers .col-title", compactList);
+        ProgressTooltip.ourHeaderCell = titleHeader;
+
+        titleHeader.find("strong").text(function(i, oldText) {
+            return oldText + " & Warzat?";
+        });
+
+        var userRatingSel = $(".col-user-rating", compactList);
+        userRatingSel.remove();
+
+        $(".col-title", compactList).width(function (i, oldWidth) {
+            return oldWidth + 70;
+        });
+    }
+
+    function setupOldHeader() {
+        // Make room for our column
+        $("th.num_votes").remove();
+        $("td.num_votes").remove();
+        $("th.created").remove();
+        $("td.created").remove();
+
+        $("th.title", Warzat.compactList).after("<th class='availableAt'>Warzat?</th>");
+        ProgressTooltip.ourHeaderCell = $("th.availableAt", Warzat.compactList);
+        $("td.title", Warzat.compactList).after("<td class='availableAt' style='text-align: left'></td>");
+    }
+
+    return {
+        compactList: compactList,
+
+        isListView: function() {
+            return compactList.length != 0;
+        },
+
+        setupHeader: function() {
+            if (newMode) {
+                setupNewHeader();
+            }
+            else {
+                setupOldHeader();
+            }
+        },
+
+        extractRows: function (maxRows) {
+            var rows;
+
+            if (newMode) {
+                rows = $.makeArray(compactList.find(".lister-list .lister-item"));
+            }
+            else {
+                rows = $.makeArray($("tr.list_item"));
+                // Remove header row.
+                rows.shift();
+            }
+
+            if (rows.length > maxRows) {
+                rows.splice(maxRows);
+            }
+
+            return rows;
+        },
+
+        extractInfo: function(row) {
+            // Possible values for type:
+            // Feature
+            // Documentary
+            // TV Series
+            // Video Game
+            var info = {
+                title: null,
+                year: null,
+                type: null
+            };
+
+            if (newMode) {
+                info.title = $(".col-title a", row).text();
+
+                // Possible formats for year block
+                // (I) (2011)
+                // (2011)
+                // (2004–2010)
+                // (2013 TV Mini-Series)
+                // (2003 TV Movie)
+                // (2013 Video Game)
+                var yearBlob = $("span.lister-item-year", row).text();
+                yearBlob.replace("(I) ", "");
+                if (yearBlob.charAt(0) == '(' && yearBlob.charAt(yearBlob.length-1) == ')') {
+                    yearBlob = yearBlob.substr(1,yearBlob.length-2);
+
+                    var dashPos = yearBlob.search("-");
+                    if (dashPos >= 0) {
+                        info.type = "TV Series";
+                        info.year = yearBlob.substr(0, dashPos);
+                    }
+                    else {
+                        if (yearBlob.search(/\d+ Video Game/) >= 0) {
+                            info.type = "Video Game";
+                        }
+                        else {
+                            info.type = "Feature";
+                        }
+                        info.year = yearBlob.match(/\d+/)[0];
+                    }
+                }
+                else {
+                    console.log("yearBlob didn't look right", yearBlob, row);
+                }
+            }
+            else {
+                info.type = $("td.title_type", row).text().trim();
+                info.title = $("td.title > a", row).text();
+                info.year = $("td.year", row).text();
+            }
+
+            return info;
+        },
+
+        getAvailableAtCell: function(row) {
+            if (newMode) {
+                var cell = $(".col-title div.availableAt", row);
+                if (cell.length == 0) {
+                    cell = $("<div style='display: inline-block' class='availableAt' />")
+                        .appendTo($(".col-title", row));
+                }
+                return cell;
+            }
+            else {
+                return $("td.availableAt", row);
+            }
+        }
+
+};
+})();
+
 var maxRows = optionValues["search-limit"];
 
-if (compactList.length > 0) {
+if (Warzat.isListView()) {
 	var action = new Action();
 	action.set("what", "used-compactList");
 	action.save();
 
-	// Make room for our column
-	$("th.num_votes").remove();
-	$("td.num_votes").remove();
-	$("th.created").remove();
-	$("td.created").remove();
-	
-	$("th.title", compactList).after("<th class='availableAt'>Warzat?</th>");
-	ProgressTooltip.ourHeaderCell = $("th.availableAt", compactList);
-	$("td.title", compactList).after("<td class='availableAt' style='text-align: left'></td>");
-	
+    Warzat.setupHeader();
+
 	chrome.storage.sync.get(optionValues, function(savedValues) {
 		
 		if (savedValues["search-limit"]) {
 			maxRows = savedValues["search-limit"];
 		}
-		
-		var rows = $.makeArray($("tr.list_item"));
-		// Remove header row.
-		rows.shift();
-		if (rows.length > maxRows) {
-			rows.splice(maxRows);
-		}
+
+        var rows = Warzat.extractRows(maxRows);
 
 		savedValues["service-netflix"] && new Netflix(rows);
 		savedValues["service-redbox"] && new Redbox(rows, savedValues);
