@@ -584,7 +584,7 @@ var Warzat = (function() {
                 if (yearBlob.charAt(0) == '(' && yearBlob.charAt(yearBlob.length-1) == ')') {
                     yearBlob = yearBlob.substr(1,yearBlob.length-2);
 
-                    var dashPos = yearBlob.search("-");
+                    var dashPos = yearBlob.indexOf("–");
                     if (dashPos >= 0) {
                         info.type = "TV Series";
                         info.year = yearBlob.substr(0, dashPos);

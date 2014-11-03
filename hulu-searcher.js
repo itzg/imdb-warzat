@@ -12,15 +12,11 @@ function Hulu(rows) {
 		})
 		
 		if (videoXml != null) {
-			var huluPlusIndicator = videoXml.find("show > has-plus-living-room");
-			if (huluPlusIndicator.length > 0 && huluPlusIndicator.text() == "true") {
-				var urlName = videoXml.find("show > canonical-name");
-				var url = "#";
-				if (urlName.length > 0) {
-					url = "http://www.hulu.com/" + urlName.text();
-				}
-				rowDetails.me.searcher.addBadge(rowDetails, url);
-			}
+            var urlName = videoXml.find("show > canonical-name");
+            if (urlName.length > 0) {
+                var url = "http://www.hulu.com/" + urlName.text();
+                rowDetails.me.searcher.addBadge(rowDetails, url);
+            }
 		}
 		
 		rowDetails.me.searcher.readyForNext(nextRowCallback);
