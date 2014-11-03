@@ -648,7 +648,9 @@ var Warzat = (function() {
         lookup: function(rowsArray) {
             console.debug("Starting lookup", rowsArray.length);
             if (savedOptions["service-netflix"]) {
-                ProgressTooltip.notice = "Netflix will be retiring their public API on <b>Nov 14, 2014</b>." +
+                ProgressTooltip.notice = "Netflix will be " +
+                    "<a target='_blank' href='http://developer.netflix.com/blog/read/Retiring_the_Netflix_Public_API'>retiring their public API</a>" +
+                    " on <b>Nov 14, 2014</b>. " +
                     "Warzat will no longer be able check availability on Netflix after that date :(";
                 new Netflix(rowsArray);
             }
