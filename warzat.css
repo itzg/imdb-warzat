@@ -16,6 +16,11 @@
 	z-index: 2000;
 }
 
+#warzatNoticePopup {
+    width: 25em;
+    color: #8b0000;
+}
+
 #clickHereArrow {
     position: absolute;
     top: -20px;

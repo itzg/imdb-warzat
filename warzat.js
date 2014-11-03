@@ -243,7 +243,9 @@ stop the searches and open options.
 var ProgressTooltip = {
 	searchers: [],
 	jqObj: null,
-	ourHeaderCell: null
+	ourHeaderCell: null,
+    notice: null,
+    noticeJqObj: null
 };
 	
 ProgressTooltip.addSearcher = function(searcher) {
@@ -295,6 +297,20 @@ ProgressTooltip.update = function() {
 				collision: "none"
 			});
 			ProgressTooltip.jqObj.show("fade");
+
+            if (ProgressTooltip.notice != null) {
+                ProgressTooltip.noticeJqObj = $("<div id='warzatNoticePopup' class='hintPopup'>" +
+                    ProgressTooltip.notice +
+                    "</div>")
+                    .appendTo("body");
+                ProgressTooltip.noticeJqObj.position({
+                    my: "left top",
+                    at: "right+15 top",
+                    of: ProgressTooltip.jqObj,
+                    collision: "none"
+                });
+                ProgressTooltip.noticeJqObj.show("fade");
+            }
 		
 			$("#btnStopWarzat").click(function(evt){
 				evt.preventDefault();
@@ -303,12 +319,18 @@ ProgressTooltip.update = function() {
 		}
         else {
             ProgressTooltip.jqObj.show("fade");
+            if (ProgressTooltip.noticeJqObj != null) {
+                ProgressTooltip.noticeJqObj.show("fade");
+            }
         }
 		$("#warzatProgressCount").text(maxRemaining);
 	}
 	else if (ProgressTooltip.jqObj != null) {
 		ProgressTooltip.jqObj.hide("puff");
-	}
+        if (ProgressTooltip.noticeJqObj != null) {
+            ProgressTooltip.noticeJqObj.hide("puff");
+        }
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -625,7 +647,11 @@ var Warzat = (function() {
 
         lookup: function(rowsArray) {
             console.debug("Starting lookup", rowsArray.length);
-            savedOptions["service-netflix"] && new Netflix(rowsArray);
+            if (savedOptions["service-netflix"]) {
+                ProgressTooltip.notice = "Netflix will be retiring their public API on <b>Nov 14, 2014</b>." +
+                    "Warzat will no longer be able check availability on Netflix after that date :(";
+                new Netflix(rowsArray);
+            }
             savedOptions["service-redbox"] && new Redbox(rowsArray, savedOptions);
             savedOptions["service-hulu"] && new Hulu(rowsArray);
             savedOptions["service-tv"] && new TvListingsQuery(rowsArray, savedOptions);
