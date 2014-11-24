@@ -2,7 +2,7 @@
 var maxSearchLimit = 300;
 
 var optionValues = {
-	"service-netflix" : true,
+	"service-netflix" : false,
 	"service-redbox" : true,
 	"service-hulu" : true,
 	"service-tv" : false,
