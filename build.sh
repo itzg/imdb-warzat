@@ -8,7 +8,7 @@
 # $REDBOX_API_KEY
 # $ROVI_API_KEY
 
-BUILD_DIR=${CIRCLE_ARTIFACTS:-out}
+BUILD_DIR=${CIRCLE_ARTIFACTS:-$(pwd)/out}
 CONTENTS="
 *.js
 *.css
@@ -38,5 +38,11 @@ done
 
 outFile=$BUILD_DIR/imdb-warzat-$version.zip
 
-zip -r $outFile $CONTENTS
+set -x
+zipRoot=$BUILD_DIR/imdb-warzat
+mkdir -p $zipRoot
+cp -r $CONTENTS $zipRoot
+
+(cd $BUILD_DIR; zip -r $outFile imdb-warzat) && rm -rf $zipRoot
+
 echo Built $outFile
