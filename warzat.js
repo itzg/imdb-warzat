@@ -82,7 +82,7 @@ where
 
 */
 
-function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId) {
+function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId, serviceName) {
 	this.context = context;
 	// Need a copy of the given array so each searcher works off its own list
 	this.rows = rows.slice(0);
@@ -92,6 +92,7 @@ function Searcher(context, rows, accessor, minRowPeriod, badgeImage, clickThruId
 	this.badgeImage = badgeImage;
 	this.lastInvocation = Date.now();
 	this.clickThruId = clickThruId;
+    this.serviceName = serviceName;
 }
 
 Searcher.normalizeType = function(imdbType) {
@@ -108,11 +109,20 @@ Searcher.normalizeType = function(imdbType) {
 
 Searcher.prototype = {
 
-	readyForNext: function(handler) {
+    handleStop: function () {
+        ProgressTooltip.update();
+        if (this.previousProgress) {
+            this.previousProgress.remove();
+            this.previousProgress = null;
+        }
+    },
+
+    readyForNext: function(handler) {
 		ProgressTooltip.update();
 
 		// see if stop flagged is raised
 		if (this.needsToStop) {
+            this.handleStop();
 			// just return to the effectively terminate the loop
 			return;
 		}
@@ -128,8 +138,8 @@ Searcher.prototype = {
 		
 		setTimeout(function() {
 			if (oThis.needsToStop) {
-				ProgressTooltip.update();
-				return;
+                oThis.handleStop();
+                return;
 			}
 			
 			var row;
@@ -153,11 +163,26 @@ Searcher.prototype = {
 				releaseYear: info.year
 			};
 
+            oThis.addProgressBadge(rowDetails);
+
 			handler.call(oThis.context, rowDetails);
 		}
 		// Last call may have been slow, so we'll cap the minimum timeout at 10ms
 		, Math.max(10, timeToWait));
 	},
+
+    addProgressBadge: function(rowDetails) {
+        if (this.serviceName) {
+            var cell = Warzat.getAvailableAtCell(rowDetails.row);
+            if (this.previousProgress) {
+                this.previousProgress.remove();
+                this.previousProgress = null;
+            }
+            var progress = $("<span class='checking'>" + "Zat " + this.serviceName + "...?</span>");
+            progress.appendTo(cell);
+            this.previousProgress = progress;
+        }
+    },
 	
 	addBadge: function(rowDetails, webPageHref) {
         var imgUrl = chrome.extension.getURL("images/"+this.badgeImage);
@@ -647,12 +672,7 @@ var Warzat = (function() {
 
         lookup: function(rowsArray) {
             console.debug("Starting lookup", rowsArray.length);
-            if (savedOptions["service-netflix"]) {
-                ProgressTooltip.notice = "Netflix " +
-                    "<a target='_blank' href='http://developer.netflix.com/blog/read/Retiring_the_Netflix_Public_API'>retired their public API</a>" +
-                    " on <b>Nov 14, 2014</b>. " +
-                    "Warzat is no longer able check availability on Netflix :(";
-            }
+            ProgressTooltip.notice = null;
             savedOptions["service-redbox"] && new Redbox(rowsArray, savedOptions);
             savedOptions["service-hulu"] && new Hulu(rowsArray);
             savedOptions["service-tv"] && new TvListingsQuery(rowsArray, savedOptions);

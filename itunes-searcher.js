@@ -59,7 +59,7 @@ function iTunes(rows) {
 		}
 	}
 	
-	this.searcher = new Searcher(this, rows, null, 100, "iTunes.png", "itunes");
+	this.searcher = new Searcher(this, rows, null, 100, "iTunes.png", "itunes", "iTunes");
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);
 }

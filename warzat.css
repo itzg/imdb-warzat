@@ -32,3 +32,8 @@
     font-size: smaller;
     text-align:center;
 }
+
+.checking, .spinner {
+    color: darkgreen;
+    font-size: smaller;
+}

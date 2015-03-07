@@ -54,7 +54,7 @@ function Hulu(rows) {
 	this.searcher = new Searcher(this, rows, null, 
 			250,
 			"Hulu.png",
-			"hulu"
+			"hulu", "Hulu"
 			);
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRowCallback);

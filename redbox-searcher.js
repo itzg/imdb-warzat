@@ -8,7 +8,7 @@ function Redbox(rows, options) {
 	var rowsToSearch = rows.slice(0, Math.min(maxRows, rows.length));
 	this.searcher = new Searcher(this, rowsToSearch, redboxAccessor, 
 			250,
-			"Redbox.png", "redbox"
+			"Redbox.png", "redbox", "Redbox"
 			);
 	ProgressTooltip.addSearcher(this.searcher);
 	this.searcher.readyForNext(nextRow);

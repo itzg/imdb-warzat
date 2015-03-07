@@ -47,10 +47,13 @@ function saveOptions() {
 	var services = [];
 	for (var optionId in optionValues) {
 		if (optionId.indexOf("service-") == 0) {
-			valuesToSave[optionId] = $("#"+optionId).get(0).checked;
-			if (valuesToSave[optionId]) {
-				services.push(optionId.substr(8));
-			}
+            var checkBox = $("#" + optionId).get(0);
+            if (checkBox) {
+                valuesToSave[optionId] = checkBox.checked;
+                if (valuesToSave[optionId]) {
+                    services.push(optionId.substr(8));
+                }
+            }
 		}
 		else {
 			valuesToSave[optionId] = $("#"+optionId).val();
@@ -75,7 +78,10 @@ function loadOptions() {
 		for (var optionId in savedValues) {
 			console.log(optionId.toString());
 			if (optionId.indexOf("service-") == 0) {
-				$("#"+optionId).get(0).checked = savedValues[optionId];
+                var checkBox = $("#" + optionId).get(0);
+                if (checkBox) {
+                    checkBox.checked = savedValues[optionId];
+                }
 			}
 			else {
 				$("#"+optionId).val(savedValues[optionId]);

@@ -15,7 +15,7 @@ function TvListingsQuery(rows, savedValues) {
 	});
 	this.showings = {};
 	
-	this.searcher = new Searcher(this, rows, null, 0, null);
+	this.searcher = new Searcher(this, rows, null, 0, null, null, "TV");
 	ProgressTooltip.addSearcher(this.searcher);
 
 	
