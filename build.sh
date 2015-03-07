@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUILD_DIR=out
+BUILD_DIR=${CIRCLE_ARTIFACTS:-out}
 CONTENTS="
 *.js
 *.css
