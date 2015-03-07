@@ -1,5 +1,5 @@
 
 var parseAccessor = {
-	appID: "",
-	jsKey: ""
+	appID: "$PARSE_APP_ID",
+	jsKey: "$PARSE_JS_KEY"
 };

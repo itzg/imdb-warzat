@@ -8,4 +8,5 @@
 /*.iml
 /parse-accessor.js
 /out
+/tmp
 .project

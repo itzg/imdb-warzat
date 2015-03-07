@@ -1,3 +1,3 @@
 var redboxAccessor = {
-	apiKey: ""
+	apiKey: "$REDBOX_API_KEY"
 }

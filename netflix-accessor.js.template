@@ -1,4 +1,4 @@
 var netflixAccessor = { 
-		consumerKey: "",
-		consumerSecret: "" 
+		consumerKey: "$NETFLIX_CONSUMER_KEY",
+		consumerSecret: "$NETFLIX_CONSUMER_SECRET"
 };
