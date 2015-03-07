@@ -23,5 +23,5 @@ version=$(awk -v FS=: '/"version"/ {
 
 outFile=$BUILD_DIR/imdb-warzat-$version.zip
 
-zip $outFile $CONTENTS
+zip -r $outFile $CONTENTS
 echo Built $outFile
